@@ -1,4 +1,5 @@
 #!/bin/bash
+# curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/a.sh | bash
 
 # --- Cấu hình ---
 # URL của file code Python cần "cài đặt" (tool.py)
