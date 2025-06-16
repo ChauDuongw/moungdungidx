@@ -1,61 +1,73 @@
 #!/bin/bash
 # curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/a.sh | bash
+# --- Configuration ---
+$PYTHON_CODE_URL = "https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/tool.py"
+$PYTHON_CODE_FILENAME = "a1.py"
 
-# --- Cấu hình ---
-# URL của file code Python cần "cài đặt" (tool.py)
-PYTHON_CODE_URL="https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/tool.py"
-# Tên file code Python sau khi tải về (bạn muốn đặt là a1.py)
-PYTHON_CODE_FILENAME="a1.py"
+$RUN_SCRIPT_URL = "https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/run_app.sh"
+$RUN_SCRIPT_FILENAME = "run_app.ps1" # Changed to .ps1 for PowerShell execution
 
-# URL của script cần chạy sau khi cài đặt (run_app.sh)
-RUN_SCRIPT_URL="https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/run_app.sh"
-# Tên file script sau khi tải về (run_app.sh)
-RUN_SCRIPT_FILENAME="run_app.sh"
+$INSTALL_DIR = (Get-Location).Path # Current directory
 
-# Thư mục đích để lưu các file (ví dụ: thư mục hiện tại)
-INSTALL_DIR="./" # Bạn có thể thay đổi thành "/opt/my_app/" hoặc "/usr/local/bin/" nếu muốn cài đặt hệ thống
+Write-Host "--- Starting installation and execution process ---"
 
-echo "--- Bắt đầu quá trình cài đặt và chạy ---"
+# --- 1. Download Python code file ---
+Write-Host "Downloading $PYTHON_CODE_URL and saving as $($INSTALL_DIR)\$PYTHON_CODE_FILENAME..."
+try {
+    Invoke-WebRequest -Uri $PYTHON_CODE_URL -OutFile "$($INSTALL_DIR)\$PYTHON_CODE_FILENAME"
+    Write-Host "Successfully downloaded and installed $PYTHON_CODE_FILENAME."
+}
+catch {
+    Write-Host "Error: Could not download or save $PYTHON_CODE_FILENAME. Please check the URL or write permissions." -ForegroundColor Red
+    exit 1
+}
 
-# --- 1. Tải và "cài đặt" (copy) file code Python ---
-echo "Đang tải $PYTHON_CODE_URL và lưu thành $INSTALL_DIR$PYTHON_CODE_FILENAME..."
-curl -sL "$PYTHON_CODE_URL" -o "$INSTALL_DIR$PYTHON_CODE_FILENAME"
+# --- 2. Download the run script (converted for PowerShell) ---
+Write-Host "Downloading $RUN_SCRIPT_URL and saving as $($INSTALL_DIR)\$RUN_SCRIPT_FILENAME..."
 
-# Kiểm tra xem việc tải và lưu file Python có thành công không
-if [ $? -eq 0 ]; then
-    echo "Tải và cài đặt $PYTHON_CODE_FILENAME thành công."
-else
-    echo "Lỗi: Không thể tải hoặc lưu $PYTHON_CODE_FILENAME. Vui lòng kiểm tra URL hoặc quyền ghi."
-    exit 1 # Thoát với mã lỗi
-fi
+# This part is tricky: run_app.sh is a bash script.
+# If run_app.sh itself contains Python execution or simple commands,
+# you might be able to adapt it to PowerShell.
+# For simplicity, we'll download it as is and note that it likely needs manual adaptation
+# or to be executed via WSL if it's complex.
+# For this example, let's assume run_app.sh can be directly translated to run_app.ps1
+# or you intend to run it with a WSL call from PowerShell.
 
-# --- 2. Tải script chạy (run_app.sh) ---
-echo "Đang tải $RUN_SCRIPT_URL và lưu thành $INSTALL_DIR$RUN_SCRIPT_FILENAME..."
-curl -sL "$RUN_SCRIPT_URL" -o "$INSTALL_DIR$RUN_SCRIPT_FILENAME"
+try {
+    # If run_app.sh is simple, you might be able to just get its content and save it as a .ps1
+    # For a direct translation of the *content* of run_app.sh to a .ps1 script:
+    $bashScriptContent = Invoke-WebRequest -Uri $RUN_SCRIPT_URL -UseBasicParsing | Select-Object -ExpandProperty Content
+    # You would then need to parse $bashScriptContent and convert it to PowerShell syntax
+    # This is a placeholder as direct conversion is highly dependent on run_app.sh's content.
+    # For demonstration, let's just save the .sh as .ps1, which won't make it directly runnable unless modified.
+    $bashScriptContent | Out-File "$($INSTALL_DIR)\$RUN_SCRIPT_FILENAME"
 
-# Kiểm tra xem việc tải script có thành công không
-if [ $? -eq 0 ]; then
-    echo "Tải $RUN_SCRIPT_FILENAME thành công."
-else
-    echo "Lỗi: Không thể tải hoặc lưu $RUN_SCRIPT_FILENAME. Vui lòng kiểm tra URL hoặc quyền ghi."
-    exit 1 # Thoát với mã lỗi
-fi
+    Write-Host "Successfully downloaded $RUN_SCRIPT_FILENAME."
+}
+catch {
+    Write-Host "Error: Could not download or save $RUN_SCRIPT_FILENAME. Please check the URL or write permissions." -ForegroundColor Red
+    exit 1
+}
 
-# Cấp quyền thực thi cho script run_app.sh
-echo "Cấp quyền thực thi cho $RUN_SCRIPT_FILENAME..."
-chmod +x "$INSTALL_DIR$RUN_SCRIPT_FILENAME"
+# PowerShell scripts (.ps1) do not require explicit execute permissions like chmod.
+# However, you might need to adjust the PowerShell execution policy if you encounter issues.
+# Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force # Run this once if needed
 
-# --- 3. Chạy script đã tải về (run_app.sh) ---
-echo "Đang chạy $RUN_SCRIPT_FILENAME..."
-# Điều hướng đến thư mục cài đặt trước khi chạy nếu cần
-cd "$INSTALL_DIR" || { echo "Lỗi: Không thể vào thư mục cài đặt."; exit 1; }
-./"$RUN_SCRIPT_FILENAME" # Chạy script đã cấp quyền thực thi
+# --- 3. Execute the downloaded script (run_app.ps1) ---
+Write-Host "Running $($RUN_SCRIPT_FILENAME)..."
 
-# Kiểm tra xem script run_app.sh có chạy thành công không
-if [ $? -eq 0 ]; then
-    echo "Chạy $RUN_SCRIPT_FILENAME thành công."
-else
-    echo "Lỗi: Chạy $RUN_SCRIPT_FILENAME thất bại."
-fi
+Set-Location $INSTALL_DIR
+try {
+    # If run_app.sh was complex, you might need to run it via WSL from PowerShell:
+    # & wsl.exe bash "./$($RUN_SCRIPT_FILENAME)"
+    # Or, if run_app.ps1 was correctly rewritten from run_app.sh content:
+    & ".\$($RUN_SCRIPT_FILENAME)"
 
-echo "--- Quá trình hoàn tất ---"
+    Write-Host "Successfully ran $($RUN_SCRIPT_FILENAME)."
+}
+catch {
+    Write-Host "Error: Failed to run $($RUN_SCRIPT_FILENAME)." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "--- Process complete ---"
