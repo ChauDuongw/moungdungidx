@@ -1,6 +1,6 @@
 
 #!/bin/bash
-# curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/a.sh | bash
+# curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/0110/minhchau0110.sh | bash
 
 # --- Cấu hình ---
 # URL của file code Python cần "cài đặt" (tool.py)
