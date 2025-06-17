@@ -102,287 +102,42 @@ def start_login_prepare_task():
 async def open_single_tab_with_actions(browser, tab_id: int):
     page = None 
     try:
-        # TẠO MỘT CONTEXT MỚI VÀ TẢI TRẠNG THÁI ĐĂNG NHẬP TỪ FILE
-        # Đảm bảo context được tạo từ browser chính
         context = await browser.new_context(storage_state=AUTH_FILE) 
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
+        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))        
         if stop_event.is_set():
             message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
             return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 1"))
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 2"))
-    
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 3"))
-    
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 4"))
-    
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 5"))
-       
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 6"))
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 7"))
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 8"))
-        
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 9"))
-       
-        page = await context.new_page()
-
-        message_queue.put((tab_id, f"Đang bắt đầu chuỗi hành động... (Đã đăng nhập)"))
-        
-        if stop_event.is_set():
-            message_queue.put((tab_id, "Nhận lệnh dừng, bỏ qua các hành động còn lại."))
-            return
-        # Hành động 1: Đi đến Blackbox.ai/builder (đã đăng nhập)
-        await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
-        message_queue.put((tab_id, "Đã tải Builder page (đã đăng nhập)."))         
-        # Các hành động còn lại (không bao gồm đăng nhập)
-        await page.locator("#chat-input-box").fill("a", timeout=0)
-        message_queue.put((tab_id, "Đã điền 'a' vào chat input."))         
-        await page.keyboard.press("Enter",delay = 1,timeout = 0)
-        message_queue.put((tab_id, "Đã đi đến Sandbox page."))
-        message_queue.put((tab_id, "Đang delay.")) 
-        await asyncio.sleep(2)
-        message_queue.put((tab_id, "Đang chờ tải xong"))
-        await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").click(timeout=0)
-        message_queue.put((tab_id, "Đang nhập tem")) 
-        await page.keyboard.press("Control+Shift+C",delay = 1)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
-        await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
-        await page.keyboard.press("Enter",delay = 1)
-        message_queue.put((tab_id, "đã nhập xong tem")) 
-        await asyncio.sleep(3) # Chờ 3 giây
-        message_queue.put((tab_id, "Đã mo xong 10"))
+        import random
+        async def tao_may(a):
+            page = await context.new_page() 
+            message_queue.put((tab_id, f"Đang tiến hành quá trình tạo máy {a}"))             
+            my_list = ["youtube", "google", "facebook", "chatGPT", "Minh Châu", "Duc Manh"]
+            c = random.choice(my_list)   
+            while True:
+                await page.goto("https://www.blackbox.ai/builder?type=web", timeout=0)
+                message_queue.put((tab_id, f"Đang mở web lần "))
+                # Các hành động còn lại (không bao gồm đăng nhập)
+                await page.locator("#chat-input-box").fill(c, timeout=0)       
+                await page.keyboard.press("Enter",delay = 1)
+                message_queue.put((tab_id, "Đã đi đến Sandbox page."))
+                try:
+                 await page.locator("#workbench-frame").content_frame.get_by_role("menuitem", name="Application Menu").locator("div").wait_for(state='visible', timeout=120000)
+                 break  
+                except Exception as e:
+                 a = 1 
+                 print(2) 
+                           
+            message_queue.put((tab_id, "Đang nhập tem")) 
+            await page.keyboard.press("Control+Shift+C",delay = 1)
+            await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").press("CapsLock", timeout=0)
+            await page.locator("#workbench-frame").content_frame.get_by_role("textbox", name="Terminal 1, bash Run the").fill("curl -sL https://raw.githubusercontent.com/ChauDuongw/moungdungidx/refs/heads/main/minhchau.sh | sudo bash",timeout = 0)
+            await page.keyboard.press("Enter",delay = 1)
+            await asyncio.sleep(3) # Chờ 3 giây
+            message_queue.put((tab_id, f"Đã mo xong {a}"))                
+        for i in range (10):
+            await tao_may(i)
         await asyncio.sleep(10) 
-        message_queue.put((tab_id, f"Tiêu đề trang cuối cùng: {await page.title()}"))
+
         message_queue.put((tab_id, "Chuỗi hành động hoàn tất."))
         while not stop_event.is_set():
             await asyncio.sleep(1) 
