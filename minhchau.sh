@@ -1,105 +1,111 @@
 #!/bin/bash
 
-# Script đào Monero với XMRig, tự động điều chỉnh số luồng CPU
-# Dùng tham số --no-msr để tránh lỗi trên máy ảo không có MSR
-# Địa chỉ pool và ví Monero được cập nhật theo yêu cầu
+# --- Cấu hình của bạn ---
+# ĐỊA CHỈ VÍ MONERO CỦA BẠN
+WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
 
-WALLET_ADDRESS="43ZyyD81HJrhUaVYkfyV9A4pDG3AsyMmE8ATBZVQMLVW6FMszZbU28Wd35wWtcUZESeP3CAXW14cMAVYiKBtaoPCD5ZHPCj"
-POOL_URL="pool.hashvault.pro:443"
+# POOL ĐÀO MONERO (HashVault.pro là một ví dụ tốt)
+MINING_POOL="pool.hashvault.pro:443"
 
-# Hàm lấy số lõi CPU khả dụng (Linux/macOS)
-get_cpu_cores() {
-  if [[ "$(uname)" == "Darwin" ]]; then
-    sysctl -n hw.ncpu
-  else
-    nproc
-  fi
-}
+# MẬT KHẨU HOẶC TÊN WORKER (thường là 'x' hoặc tên bất kỳ)
+POOL_PASSWORD="x"
 
-# Kiểm tra và cài đặt jq nếu chưa có
-install_jq() {
-  if ! command -v jq &> /dev/null; then
-    echo "jq chưa được cài đặt. Đang cài đặt jq..."
-    if command -v apt-get &> /dev/null; then
-      sudo apt-get update && sudo apt-get install -y jq
-    elif command -v yum &> /dev/null; then
-      sudo yum install -y epel-release && sudo yum install -y jq
-    else
-      echo "Không thể tự động cài đặt jq. Vui lòng cài đặt thủ công."
-      exit 1
-    fi
-  fi
-}
+# --- Bắt đầu Script ---
 
-install_jq
+echo "Bắt đầu thiết lập và chạy XMRig để đào Monero (chế độ bình thường)..."
 
-CPU_CORES=$(get_cpu_cores)
-
-MAX_THREADS=4
-
-if [[ $CPU_CORES -lt $MAX_THREADS ]]; then
-  THREADS=$CPU_CORES
+# 1. Cập nhật hệ thống và cài đặt các gói cần thiết
+echo "Cập nhật hệ thống và cài đặt các gói cần thiết (wget, build-essential/cmake, libuv, libssl, libhwloc)..."
+# Kiểm tra xem có phải là Debian/Ubuntu không
+if command -v apt &> /dev/null
+then
+    sudo apt update -y
+    sudo apt install -y wget build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+elif command -v yum &> /dev/null
+then # Kiểm tra xem có phải là CentOS/RHEL không
+    sudo yum install -y epel-release
+    sudo yum install -y wget gcc-c++ make cmake libuv-devel openssl-devel hwloc-devel
 else
-  THREADS=$MAX_THREADS
-fi
-
-echo "Hệ thống có $CPU_CORES lõi CPU."
-echo "Sử dụng $THREADS luồng để đào."
-
-XMRIG_PATH="./xmrig"
-
-if [[ ! -f "$XMRIG_PATH" ]]; then
-  echo "Lỗi: Không tìm thấy tập tin xmrig tại $XMRIG_PATH"
-  echo "Hãy tải xmrig từ https://github.com/xmrig/xmrig/releases và đặt vào đúng vị trí."
-  exit 1
-fi
-
-# Khởi chạy XMRig với tham số --no-msr để tắt truy cập MSR
-"$XMRIG_PATH" \
-  --url="$POOL_URL" \
-  --user="$WALLET_ADDRESS" \
-  --pass="x" \
-  --threads="$THREADS" \
-  --tls \
-  --print-time=60 \
-  --api-port=16050 \
-  --no-msr \
-  > xmrig.log 2>&1 &
-
-XMRIG_PID=$!
-
-echo "XMRig đã khởi chạy (PID: $XMRIG_PID) với --no-msr"
-
-sleep 10
-
-FAIL_COUNT=0
-MAX_FAIL=5
-
-while true; do
-  # Kiểm tra tiến trình xmrig còn chạy không
-  if ! kill -0 $XMRIG_PID 2>/dev/null; then
-    echo "XMRig đã dừng không mong muốn. Script sẽ thoát."
+    echo "Hệ điều hành không được hỗ trợ hoặc không tìm thấy trình quản lý gói (apt/yum)."
+    echo "Vui lòng cài đặt wget, build-essential/gcc-c++/make, cmake, libuv-dev, libssl-dev, libhwloc-dev thủ công."
     exit 1
-  fi
+fi
 
-  RESPONSE=$(curl -s --max-time 10 "http://127.0.0.1:16050")
-  if [[ $? -ne 0 || -z "$RESPONSE" ]]; then
-    ((FAIL_COUNT++))
-    echo "Không lấy được thông tin tốc độ đào, thử lại $FAIL_COUNT/$MAX_FAIL"
-    if [[ $FAIL_COUNT -ge $MAX_FAIL ]]; then
-      echo "Vượt quá số lần thử tối đa, kiểm tra lại mạng hoặc XMRig."
-      kill $XMRIG_PID
-      exit 1
-    fi
-  else
-    FAIL_COUNT=0
-    HASHRATE=$(echo "$RESPONSE" | jq '.hashrate')
-    if [[ "$HASHRATE" != "null" && -n "$HASHRATE" ]]; then
-      echo "$(date '+%Y-%m-%d %H:%M:%S') - Hashrate: $HASHRATE H/s"
-    else
-      echo "Không lấy được tốc độ đào hợp lệ."
-    fi
-  fi
+# 2. Tải XMRig
+echo "Tải XMRig phiên bản mới nhất cho Linux..."
+# URL XMRig mới nhất cho Linux x64 static
+XMRIG_URL="https://github.com/xmrig/xmrig/releases/download/v6.23.0/xmrig-6.23.0-linux-static-x64.tar.gz"
 
-  sleep 60
-done
+XMRIG_ARCHIVE=$(basename "$XMRIG_URL")
+XMRIG_DIR="xmrig-6.23.0"
+
+echo "Tải XMRig từ: $XMRIG_URL"
+wget "$XMRIG_URL" --show-progress # Bỏ -q để thấy tiến trình tải
+
+# Kiểm tra xem tải xuống có thành công không
+if [ $? -ne 0 ]; then
+    echo "Lỗi: Không thể tải xuống XMRig từ $XMRIG_URL. Vui lòng kiểm tra lại URL hoặc kết nối internet."
+    exit 1
+fi
+
+# 3. Giải nén XMRig
+echo "Giải nén XMRig..."
+tar -xzf "$XMRIG_ARCHIVE" -C .
+if [ ! -d "$XMRIG_DIR" ]; then
+    echo "Lỗi: Giải nén thất bại. Thư mục XMRig không tồn tại sau khi giải nén."
+    echo "Kiểm tra xem tên file ($XMRIG_ARCHIVE) và thư mục đích ($XMRIG_DIR) có khớp không."
+    exit 1
+fi
+
+# 4. Di chuyển vào thư mục XMRig và cấp quyền thực thi
+echo "Di chuyển vào thư mục XMRig và cấp quyền thực thi..."
+cd "$XMRIG_DIR"
+chmod +x xmrig
+
+# 5. Tạo file cấu hình JSON (XMRig sẽ sử dụng tất cả CPU mặc định)
+echo "Tạo file cấu hình config.json cho XMRig..."
+cat <<EOF > config.json
+{
+    "autosave": true,
+    "cpu": true,      // Kích hoạt đào CPU, mặc định sử dụng tất cả luồng
+    "opencl": false,  // Tắt OpenCL (đào GPU AMD)
+    "cuda": false,    // Tắt CUDA (đào GPU Nvidia)
+    "pools": [
+        {
+            "algo": null,
+            "coin": null,
+            "url": "$MINING_POOL",
+            "user": "$WALLET_ADDRESS",
+            "pass": "$POOL_PASSWORD",
+            "rig-id": null,
+            "nicehash": false,
+            "keepalive": true,
+            "tls": false,
+            "tls-fingerprint": null,
+            "daemon": false,
+            "socks5": null,
+            "self-select": null,
+            "log-in": null
+        }
+    ]
+    // Các tùy chọn chạy nền/ẩn danh đã bị loại bỏ
+    // "log-file": "xmrig.log",
+    // "print-time": 60,
+    // "background": true,
+    // "syslog": false,
+    // "nice": 5,
+    // "daemon": true,
+    // "custom-name": "$FAKE_PROCESS_NAME"
+}
+EOF
+
+# 6. Chạy XMRig trực tiếp
+echo "Bắt đầu đào Monero với XMRig..."
+echo "Sử dụng địa chỉ ví: $WALLET_ADDRESS"
+echo "Kết nối đến pool: $MINING_POOL"
+echo "Để dừng đào, nhấn Ctrl+C."
+
+# Chạy xmrig bằng file cấu hình trực tiếp trong terminal
+./xmrig -c config.json
+
+echo "XMRig đã dừng."
