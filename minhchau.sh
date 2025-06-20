@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- Cấu hình của bạn ---
-WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
+WALLET_ADDRESS="43ZyyD81HJrhUaVYkfyV9A4pDG3AsyMmE8ATBZVQMLVW6FMszZbU28Wd35wWtcUZESeP3CAXW14cMAVYiKBtaoPCD5ZHPCj"
 MINING_POOL="pool.hashvault.pro:443"
 WORKER_NAME="MyMoneroMiner" # Đặt tên cho worker của bạn để dễ theo dõi trên pool
 
