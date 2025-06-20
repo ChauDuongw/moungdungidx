@@ -1,83 +1,93 @@
 #!/bin/bash
 
 # --- Cấu hình của bạn ---
-WALLET_ADDRESS="43ZyyD81HJrhUaVYkfyV9A4pDG3AsyMmE8ATBZVQMLVW6FMszZbU28Wd35wWtcUZESeP3CAXW14cMAVYiKBtaoPCD5ZHPCj"
+# Địa chỉ ví Monero của bạn. HÃY THAY THẾ BẰNG ĐỊA CHỈ VÍ THỰC CỦA BẠN!
+WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
+
+# Pool đào Monero (ví dụ: HashVault.pro, bạn có thể thay đổi pool khác nếu muốn)
 MINING_POOL="pool.hashvault.pro:443"
-WORKER_NAME="MyMoneroMiner" # Đặt tên cho worker của bạn để dễ theo dõi trên pool
+
+# Tên worker của bạn để dễ theo dõi trên pool. Đặt tên bất kỳ bạn thích.
+WORKER_NAME="MyMoneroMinerNoHugePages"
 
 # --- Cấu hình XMRig ---
-# Tự động phát hiện số luồng CPU có sẵn
-# nproc: in ra số lượng bộ xử lý đang hoạt động
-# Để đào hiệu quả nhất, thường nên sử dụng tất cả các luồng CPU.
+# Tự động phát hiện số luồng CPU có sẵn để sử dụng tối đa tài nguyên.
 NUM_THREADS=$(nproc)
 
-# Tên thư mục chứa xmrig
+# Tên thư mục mà xmrig sẽ được giải nén vào.
 XMRIG_DIR="xmrig"
 
-# Link tải xmrig (kiểm tra link mới nhất trên GitHub của xmrig)
-# Đảm bảo bạn tải đúng phiên bản cho hệ điều hành của mình (Linux x64)
-# (Lưu ý: Luôn kiểm tra trang Releases của XMRig để lấy link mới nhất!)
-# Hiện tại (tháng 6/2025), xmrig 6.21.0 là phiên bản phổ biến, nhưng bạn nên kiểm tra lại.
+# Link tải xmrig (kiểm tra link mới nhất trên GitHub của xmrig).
+# TẠI THỜI ĐIỂM HIỆN TẠI (Tháng 6/2025), v6.21.0 là phiên bản phổ biến.
+# LUÔN KIỂM TRA TRANG RELEASES CỦA XMRIG (https://github.com/xmrig/xmrig/releases)
+# ĐỂ LẤY LINK TẢI PHIÊN BẢN MỚI NHẤT VÀ ĐÚNG CHO LINUX X64!
 XMRIG_RELEASE_URL="https://github.com/xmrig/xmrig/releases/download/v6.21.0/xmrig-6.21.0-linux-x64.tar.gz"
 XMRIG_ARCHIVE="xmrig-6.21.0-linux-x64.tar.gz"
 
+# Tên thư mục gốc sau khi giải nén file .tar.gz (đã sửa từ lỗi trước)
+# Dựa vào output bạn cung cấp, nó là "xmrig-6.21.0"
+EXTRACTED_DIR_NAME="xmrig-6.21.0"
+
 # --- Bắt đầu script ---
 
-echo "--- Bắt đầu thiết lập đào XMR tối ưu ---"
-echo "Pool: $MINING_POOL"
-echo "Ví: $WALLET_ADDRESS"
-echo "Worker: $WORKER_NAME"
-echo "Số luồng CPU được phát hiện: $NUM_THREADS"
+echo "--- Bắt đầu thiết lập và chạy đào XMR (Không dùng Large Pages) ---"
+echo "Pool đào: ${MINING_POOL}"
+echo "Địa chỉ ví: ${WALLET_ADDRESS}"
+echo "Tên worker: ${WORKER_NAME}"
+echo "Số luồng CPU được phát hiện: ${NUM_THREADS}"
 
-# Cài đặt các gói cần thiết (build-essential, libhwloc-dev, libssl-dev, libuv1-dev)
-# Đây là các dependency cơ bản để xmrig hoạt động và có thể cần cho việc build nếu bạn build từ source.
-# Mặc dù chúng ta tải bản đã biên dịch sẵn, việc có chúng vẫn đảm bảo môi trường tốt.
+# --- Cài đặt các gói cần thiết ---
 echo "Kiểm tra và cài đặt các gói cần thiết..."
+# Cập nhật danh sách gói.
 sudo apt update -y
-sudo apt install -y build-essential libhwloc-dev libssl-dev libuv1-dev libjemalloc-dev # libjemalloc-dev cho hiệu suất bộ nhớ
+# Cài đặt các gói cơ bản cần thiết cho xmrig và tối ưu bộ nhớ (libjemalloc-dev).
+sudo apt install -y build-essential libhwloc-dev libssl-dev libuv1-dev libjemalloc-dev
 
-# Kiểm tra xem xmrig đã được tải về chưa
+# --- Tải về và giải nén XMRig ---
 if [ ! -d "$XMRIG_DIR" ]; then
-    echo "Thư mục xmrig không tồn tại. Đang tải và giải nén xmrig..."
-    wget "$XMRIG_RELEASE_URL" -O "$XMRIG_ARCHIVE" || { echo "Lỗi: Không thể tải xmrig từ $XMRIG_RELEASE_URL. Kiểm tra lại URL."; exit 1; }
-    tar -xzvf "$XMRIG_ARCHIVE" || { echo "Lỗi: Không thể giải nén $XMRIG_ARCHIVE."; exit 1; }
-    mv $(basename "$XMRIG_ARCHIVE" .tar.gz) "$XMRIG_DIR" || { echo "Lỗi: Không thể di chuyển thư mục xmrig đã giải nén."; exit 1; }
-    rm "$XMRIG_ARCHIVE"
+    echo "Thư mục ${XMRIG_DIR} không tồn tại. Đang tải và giải nén xmrig..."
+    # Tải file nén xmrig
+    wget "${XMRIG_RELEASE_URL}" -O "${XMRIG_ARCHIVE}" || { echo "Lỗi: Không thể tải xmrig từ ${XMRIG_RELEASE_URL}. Kiểm tra lại URL."; exit 1; }
+    
+    # Giải nén file đã tải về
+    tar -xzvf "${XMRIG_ARCHIVE}" || { echo "Lỗi: Không thể giải nén ${XMRIG_ARCHIVE}."; exit 1; }
+    
+    # Di chuyển thư mục đã giải nén vào thư mục mong muốn
+    # Đã sửa lỗi: sử dụng đúng tên thư mục sau khi giải nén
+    mv "${EXTRACTED_DIR_NAME}" "${XMRIG_DIR}" || { echo "Lỗi: Không thể di chuyển thư mục xmrig đã giải nén (${EXTRACTED_DIR_NAME})."; exit 1; }
+    
+    # Xóa file nén để giải phóng dung lượng
+    rm "${XMRIG_ARCHIVE}"
 else
-    echo "Thư mục xmrig đã tồn tại. Bỏ qua bước tải về."
+    echo "Thư mục ${XMRIG_DIR} đã tồn tại. Bỏ qua bước tải về."
 fi
 
-# Di chuyển vào thư mục xmrig
-cd "$XMRIG_DIR" || { echo "Lỗi: Không thể vào thư mục xmrig. Thoát."; exit 1; }
+# Di chuyển vào thư mục xmrig để chạy miner
+cd "${XMRIG_DIR}" || { echo "Lỗi: Không thể vào thư mục ${XMRIG_DIR}. Thoát."; exit 1; }
 
-# Đảm bảo quyền thực thi cho xmrig
+# Đảm bảo file xmrig có quyền thực thi
 chmod +x xmrig
 
-# Tối ưu hóa hệ thống (khuyên dùng cho đào coin)
-# Large Pages: Giúp tăng hiệu suất đáng kể cho việc đào RandomX (Monero).
-# Thường yêu cầu quyền root hoặc thiết lập cụ thể.
-echo "Thiết lập Large Pages (yêu cầu quyền sudo)..."
-sudo sysctl -w vm.nr_hugepages=128 || echo "Cảnh báo: Không thể thiết lập Large Pages. Có thể do giới hạn RAM hoặc quyền hạn."
-# Lưu ý: Số lượng hugepages cần thiết có thể thay đổi tùy thuộc vào lượng RAM và cấu hình CPU.
-# 128 trang (mỗi trang 2MB) = 256MB RAM dành cho hugepages.
-# Bạn có thể tăng số này nếu có nhiều RAM và muốn tối ưu hơn.
-
-# Chạy xmrig với các tùy chọn tối ưu
+# --- Chạy XMRig ---
 echo "Bắt đầu đào Monero (XMR) với các tùy chọn tối ưu..."
+echo "Lưu ý: xmrig sẽ chạy trong nền."
 
 ./xmrig \
-    -o "$MINING_POOL" \
-    -u "$WALLET_ADDRESS" \
-    -p "$WORKER_NAME" \
-    -t "$NUM_THREADS" \
+    -o "${MINING_POOL}" \
+    -u "${WALLET_ADDRESS}" \
+    -p "${WORKER_NAME}" \
+    -t "${NUM_THREADS}" \
     --donate-level=1 \
     --cpu-priority=5 \
     --randomx-mode=auto \
-    --randomx-no-jit \
     --log-file=xmrig.log \
-    --background # Chạy xmrig trong nền
+    --background
 
-echo "XMRig đã được khởi chạy trong nền. Kiểm tra log file (xmrig.log) hoặc dùng 'htop' để xem tiến trình."
-echo "Để kiểm tra trạng thái hoặc dừng, bạn có thể tìm tiến trình xmrig và kill nó."
-echo "Ví dụ: ps aux | grep xmrig để tìm PID, sau đó kill <PID>"
-echo "Để xem log trực tiếp: tail -f xmrig.log"
+echo "--- XMRig đã được khởi chạy trong nền ---"
+echo "Bạn có thể kiểm tra trạng thái hoạt động bằng cách xem file log:"
+echo "  tail -f xmrig.log"
+echo "Để kiểm tra tiến trình đang chạy:"
+echo "  ps aux | grep xmrig"
+echo "Để dừng quá trình đào:"
+echo "  Tìm PID của xmrig từ lệnh 'ps aux | grep xmrig', sau đó chạy: kill <PID>"
+echo "Script đã hoàn thành."
