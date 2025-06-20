@@ -1,93 +1,124 @@
 #!/bin/bash
 
 # --- Cấu hình của bạn ---
-# Địa chỉ ví Monero của bạn. HÃY THAY THẾ BẰNG ĐỊA CHỈ VÍ THỰC CỦA BẠN!
-WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
+# ĐỊA CHỈ VÍ MONERO CỦA BẠN
+WALLET_ADDRESS="43ZyyD81HJrhUaVYkfyV9A4pDG3AsyMmE8ATBZVQMLVW6FMszZbU28Wd35wWtcUZESeP3CAXW14cMAVYiKBtaoPCD5ZHPCj"
 
-# Pool đào Monero (ví dụ: HashVault.pro, bạn có thể thay đổi pool khác nếu muốn)
+# POOL ĐÀO MONERO
 MINING_POOL="pool.hashvault.pro:443"
 
-# Tên worker của bạn để dễ theo dõi trên pool. Đặt tên bất kỳ bạn thích.
-WORKER_NAME="MyMoneroMinerNoHugePages"
+# MẬT KHẨU HOẶC TÊN WORKER (thường là 'x' hoặc tên bất kỳ)
+POOL_PASSWORD="x"
 
-# --- Cấu hình XMRig ---
-# Tự động phát hiện số luồng CPU có sẵn để sử dụng tối đa tài nguyên.
-NUM_THREADS=$(nproc)
+# --- Bắt đầu Script ---
 
-# Tên thư mục mà xmrig sẽ được giải nén vào.
-XMRIG_DIR="xmrig"
+echo "Bắt đầu thiết lập và chạy XMRig với công suất tối đa và tối ưu hóa..."
 
-# Link tải xmrig (kiểm tra link mới nhất trên GitHub của xmrig).
-# TẠI THỜI ĐIỂM HIỆN TẠI (Tháng 6/2025), v6.21.0 là phiên bản phổ biến.
-# LUÔN KIỂM TRA TRANG RELEASES CỦA XMRIG (https://github.com/xmrig/xmrig/releases)
-# ĐỂ LẤY LINK TẢI PHIÊN BẢN MỚI NHẤT VÀ ĐÚNG CHO LINUX X64!
-XMRIG_RELEASE_URL="https://github.com/xmrig/xmrig/releases/download/v6.21.0/xmrig-6.21.0-linux-x64.tar.gz"
-XMRIG_ARCHIVE="xmrig-6.21.0-linux-x64.tar.gz"
-
-# Tên thư mục gốc sau khi giải nén file .tar.gz (đã sửa từ lỗi trước)
-# Dựa vào output bạn cung cấp, nó là "xmrig-6.21.0"
-EXTRACTED_DIR_NAME="xmrig-6.21.0"
-
-# --- Bắt đầu script ---
-
-echo "--- Bắt đầu thiết lập và chạy đào XMR (Không dùng Large Pages) ---"
-echo "Pool đào: ${MINING_POOL}"
-echo "Địa chỉ ví: ${WALLET_ADDRESS}"
-echo "Tên worker: ${WORKER_NAME}"
-echo "Số luồng CPU được phát hiện: ${NUM_THREADS}"
-
-# --- Cài đặt các gói cần thiết ---
-echo "Kiểm tra và cài đặt các gói cần thiết..."
-# Cập nhật danh sách gói.
-sudo apt update -y
-# Cài đặt các gói cơ bản cần thiết cho xmrig và tối ưu bộ nhớ (libjemalloc-dev).
-sudo apt install -y build-essential libhwloc-dev libssl-dev libuv1-dev libjemalloc-dev
-
-# --- Tải về và giải nén XMRig ---
-if [ ! -d "$XMRIG_DIR" ]; then
-    echo "Thư mục ${XMRIG_DIR} không tồn tại. Đang tải và giải nén xmrig..."
-    # Tải file nén xmrig
-    wget "${XMRIG_RELEASE_URL}" -O "${XMRIG_ARCHIVE}" || { echo "Lỗi: Không thể tải xmrig từ ${XMRIG_RELEASE_URL}. Kiểm tra lại URL."; exit 1; }
-    
-    # Giải nén file đã tải về
-    tar -xzvf "${XMRIG_ARCHIVE}" || { echo "Lỗi: Không thể giải nén ${XMRIG_ARCHIVE}."; exit 1; }
-    
-    # Di chuyển thư mục đã giải nén vào thư mục mong muốn
-    # Đã sửa lỗi: sử dụng đúng tên thư mục sau khi giải nén
-    mv "${EXTRACTED_DIR_NAME}" "${XMRIG_DIR}" || { echo "Lỗi: Không thể di chuyển thư mục xmrig đã giải nén (${EXTRACTED_DIR_NAME})."; exit 1; }
-    
-    # Xóa file nén để giải phóng dung lượng
-    rm "${XMRIG_ARCHIVE}"
+# 1. Cập nhật hệ thống và cài đặt các gói cần thiết
+echo "Cập nhật hệ thống và cài đặt các gói cần thiết (wget, build-essential/cmake, libuv, libssl, libhwloc)..."
+if command -v apt &> /dev/null
+then
+    sudo apt update -y
+    sudo apt install -y wget build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+elif command -v yum &> /dev/null
+then
+    sudo yum install -y epel-release
+    sudo yum install -y wget gcc-c++ make cmake libuv-devel openssl-devel hwloc-devel
 else
-    echo "Thư mục ${XMRIG_DIR} đã tồn tại. Bỏ qua bước tải về."
+    echo "Hệ điều hành không được hỗ trợ hoặc không tìm thấy trình quản lý gói (apt/yum)."
+    echo "Vui lòng cài đặt wget, build-essential/gcc-c++/make, cmake, libuv-dev, libssl-dev, libhwloc-dev thủ công."
+    exit 1
 fi
 
-# Di chuyển vào thư mục xmrig để chạy miner
-cd "${XMRIG_DIR}" || { echo "Lỗi: Không thể vào thư mục ${XMRIG_DIR}. Thoát."; exit 1; }
+# 2. Tải XMRig
+echo "Tải XMRig phiên bản mới nhất cho Linux..."
+XMRIG_URL="https://github.com/xmrig/xmrig/releases/download/v6.23.0/xmrig-6.23.0-linux-static-x64.tar.gz"
 
-# Đảm bảo file xmrig có quyền thực thi
+XMRIG_ARCHIVE=$(basename "$XMRIG_URL")
+XMRIG_DIR="xmrig-6.23.0"
+
+echo "Tải XMRig từ: $XMRIG_URL"
+wget "$XMRIG_URL" --show-progress
+
+if [ $? -ne 0 ]; then
+    echo "Lỗi: Không thể tải xuống XMRig từ $XMRIG_URL. Vui lòng kiểm tra lại URL hoặc kết nối internet."
+    exit 1
+fi
+
+# 3. Giải nén XMRig
+echo "Giải nén XMRig..."
+tar -xzf "$XMRIG_ARCHIVE" -C .
+if [ ! -d "$XMRIG_DIR" ]; then
+    echo "Lỗi: Giải nén thất bại. Thư mục XMRig không tồn tại sau khi giải nén."
+    exit 1
+fi
+
+# 4. Di chuyển vào thư mục XMRig và cấp quyền thực thi
+echo "Di chuyển vào thư mục XMRig và cấp quyền thực thi..."
+cd "$XMRIG_DIR"
 chmod +x xmrig
 
-# --- Chạy XMRig ---
-echo "Bắt đầu đào Monero (XMR) với các tùy chọn tối ưu..."
-echo "Lưu ý: xmrig sẽ chạy trong nền."
+# 5. Cài đặt MSR mod (nếu có thể)
+# MSR mod giúp tối ưu hóa hiệu suất CPU cho RandomX.
+# Yêu cầu quyền root và module kernel msr.
+echo "Cố gắng tải module msr và cấp quyền truy cập để tối ưu hóa hiệu suất..."
+sudo modprobe msr
+sudo chmod 666 /dev/cpu/*/msr
+if [ $? -ne 0 ]; then
+    echo "Cảnh báo: Không thể áp dụng MSR mod. Hasrate có thể thấp hơn."
+fi
 
-./xmrig \
-    -o "${MINING_POOL}" \
-    -u "${WALLET_ADDRESS}" \
-    -p "${WORKER_NAME}" \
-    -t "${NUM_THREADS}" \
-    --donate-level=1 \
-    --cpu-priority=5 \
-    --randomx-mode=auto \
-    --log-file=xmrig.log \
-    --background
 
-echo "--- XMRig đã được khởi chạy trong nền ---"
-echo "Bạn có thể kiểm tra trạng thái hoạt động bằng cách xem file log:"
-echo "  tail -f xmrig.log"
-echo "Để kiểm tra tiến trình đang chạy:"
-echo "  ps aux | grep xmrig"
-echo "Để dừng quá trình đào:"
-echo "  Tìm PID của xmrig từ lệnh 'ps aux | grep xmrig', sau đó chạy: kill <PID>"
-echo "Script đã hoàn thành."
+# 6. Tạo file cấu hình JSON cho hiệu suất tối đa
+echo "Tạo file cấu hình config.json cho XMRig (tối ưu hóa tối đa)..."
+cat <<EOF > config.json
+{
+    "autosave": true,
+    "cpu": {
+        "enabled": true,
+        "rx": null,     // Sử dụng 'null' để XMRig tự động sử dụng tất cả luồng khả dụng
+        "cctp": null,
+        "asm": true     // Tối ưu hóa assembly
+    },
+    "opencl": false,
+    "cuda": false,
+    "pools": [
+        {
+            "algo": null,
+            "coin": null,
+            "url": "$MINING_POOL",
+            "user": "$WALLET_ADDRESS",
+            "pass": "$POOL_PASSWORD",
+            "rig-id": null,
+            "nicehash": false,
+            "keepalive": true,
+            "tls": false,
+            "tls-fingerprint": null,
+            "daemon": false,
+            "socks5": null,
+            "self-select": null,
+            "log-in": null
+        }
+    ],
+    "nice": 0,          // Đặt nice value là 0 để ưu tiên CPU cao nhất cho XMRig
+    "print-time": 5,    // In hashrate mỗi 5 giây (mặc định) để theo dõi liên tục
+    "log-file": null,   // Không ghi log ra file, in trực tiếp ra console
+    "background": false, // Không chạy nền
+    "daemon": false      // Không chạy như daemon
+}
+EOF
+
+# 7. Chạy XMRig với độ ưu tiên cao nhất
+echo "Bắt đầu đào Monero với XMRig với công suất tối đa..."
+echo "Sử dụng địa chỉ ví: $WALLET_ADDRESS"
+echo "Kết nối đến pool: $MINING_POOL"
+echo "Để dừng đào, nhấn Ctrl+C."
+
+# Sử dụng 'ionice -c 1 -n 0' để đặt độ ưu tiên I/O (nếu có thể)
+# Sử dụng 'taskset -c 0-N-1' để ghim vào các lõi CPU (tùy chọn nâng cao)
+# Sử dụng 'numactl --interleave=all' để tối ưu NUMA (nếu có)
+# Tuy nhiên, chỉ đơn giản chạy './xmrig -c config.json' là đủ để đạt gần tối đa.
+
+./xmrig -c config.json
+
+echo "XMRig đã dừng."
