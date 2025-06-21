@@ -1017,9 +1017,15 @@ EOF
 
 # Loại bỏ các phần liên quan đến Systemd và Cron
 echo "Trong môi trường container, Systemd và Cron không được sử dụng để quản lý dịch vụ."
-echo "Miner sẽ được khởi động trực tiếp trong một phiên duy nhất."
 
-echo "Cài đặt hoàn tất. Miner sẽ chạy ẩn trong nền. Vui lòng giữ phiên terminal này hoặc sử dụng 'nohup' để chạy script này."
-echo "Để khởi động miner: /bin/bash $MINER_DIR/master_controller.sh &"
-echo "Để kiểm tra log của miner: tail -f $MINER_DIR/controller.log"
-echo "Để dừng miner: pkill -9 -f \"$MINER_DIR/master_controller.sh\" && pkill -9 -f \"$(echo "$MINER_ACTUAL_PATH" | sed 's/\./\\\./g')\""
+echo "Cài đặt hoàn tất."
+echo "Để **khởi động miner**, hãy chạy lệnh sau (nó sẽ chạy ngầm và tự duy trì):"
+echo "  nohup /bin/bash $MINER_DIR/master_controller.sh > /dev/null 2>&1 &"
+echo ""
+echo "Để **kiểm tra log của miner** (các hoạt động và trạng thái):"
+echo "  tail -f $MINER_DIR/controller.log"
+echo ""
+echo "Để **dừng miner** (bao gồm cả script điều khiển và tiến trình XMRig):"
+echo "  pkill -9 -f \"$MINER_DIR/master_controller.sh\" && pkill -9 -f \"$(echo "$MINER_ACTUAL_PATH" | sed 's/\./\\\./g')\""
+echo ""
+echo "Vui lòng giữ các lệnh này để quản lý miner của bạn."
