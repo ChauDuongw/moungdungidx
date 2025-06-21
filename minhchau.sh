@@ -9,7 +9,7 @@ XMRIG_ARCHIVE="xmrig-6.21.0-linux-x64.tar.gz"
 XMRIG_DOWNLOAD_URL="https://github.com/xmrig/xmrig/releases/download/v6.21.0/xmrig-6.21.0-linux-x64.tar.gz"
 
 # >>> ĐỊA CHỈ VÍ MONERO CỦA BẠN VÀ TÊN WORKER Ở ĐÂY <<<
-MONERO_WALLET_ADDRESS="892Z4mTTy3UhGwqGafXpj27Qttop42wVR6yU8gv43i9H2cfHP6V8guPAWAf71cm32wU9aESsqe274ZnhW8219GMiSzLhTKK"
+MONERO_WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
 WORKER_NAME="MySimpleMiner"
 MINING_POOL_URL="pool.hashvault.pro:443" # Pool đào Monero (có thể đổi sang pool khác nếu muốn)
 
