@@ -1,97 +1,76 @@
-#!/bin/bash
-
-# --- YOUR CONFIGURATION ---
-# YOUR MONERO WALLET ADDRESS
+# --- Cấu hình của bạn ---
+# ĐỊA CHỈ VÍ MONERO CỦA BẠNAdd commentMore actions
 WALLET_ADDRESS="85JiygdevZmb1AxUosPHyxC13iVu9zCydQ2mDFEBJaHp2wyupPnq57n6bRcNBwYSh9bA5SA4MhTDh9moj55FwinXGn9jDkz"
 
-# MONERO MINING POOL (HashVault.pro is a good example)
+# POOL ĐÀO MONERO (HashVault.pro là một ví dụ tốt)
 MINING_POOL="pool.hashvault.pro:443"
 
-# PASSWORD OR WORKER NAME (usually 'x' or any name)
+# MẬT KHẨU HOẶC TÊN WORKER (thường là 'x' hoặc tên bất kỳ)
 POOL_PASSWORD="x"
 
-# --- Script Start ---
+# --- Bắt đầu Script ---
 
-echo "Starting XMRig setup and Monero mining (normal mode)..."
+echo "Bắt đầu thiết lập và chạy XMRig để đào Monero (chế độ bình thường)..."
 
-# 1. Update system and install necessary packages
-echo "Updating system and installing necessary packages (wget, build-essential/cmake, libuv, libssl, libhwloc)..."
-# Check for Debian/Ubuntu
-if command -v apt &> /dev/null; then
+# 1. Cập nhật hệ thống và cài đặt các gói cần thiết
+echo "Cập nhật hệ thống và cài đặt các gói cần thiết (wget, build-essential/cmake, libuv, libssl, libhwloc)..."
+# Kiểm tra xem có phải là Debian/Ubuntu không
+if command -v apt &> /dev/null
+then
     sudo apt update -y
-    sudo apt install -y wget build-essential cmake libuv1-dev libssl-dev libhwloc-dev
-# Check for CentOS/RHEL
-elif command -v yum &> /dev/null; then
-    sudo yum install -y epel-release
-    sudo yum install -y wget gcc-c++ make cmake libuv-devel openssl-devel hwloc-devel
-else
-    echo "Unsupported OS or package manager (apt/yum) not found."
-    echo "Please install wget, build-essential/gcc-c++/make, cmake, libuv-dev, libssl-dev, libhwloc-dev manually."
+@@ -30,39 +15,22 @@ else
+    echo "Vui lòng cài đặt wget, build-essential/gcc-c++/make, cmake, libuv-dev, libssl-dev, libhwloc-dev thủ công."
     exit 1
 fi
 
-# 2. Download XMRig
-echo "Downloading the latest XMRig for Linux..."
-# Latest XMRig URL for Linux x64 static - ALWAYS CHECK FOR THE LATEST VERSION ON XMRIG'S GITHUB RELEASES
-XMRIG_VERSION="6.23.0" # Make sure this is the current latest or desired version
-XMRIG_URL="https://github.com/xmrig/xmrig/releases/download/v${XMRIG_VERSION}/xmrig-${XMRIG_VERSION}-linux-static-x64.tar.gz"
+# 2. Tải XMRig
+echo "Tải XMRig phiên bản mới nhất cho Linux..."
+# URL XMRig mới nhất cho Linux x64 static
+XMRIG_URL="https://github.com/xmrig/xmrig/releases/download/v6.23.0/xmrig-6.23.0-linux-static-x64.tar.gz"
 
 XMRIG_ARCHIVE=$(basename "$XMRIG_URL")
-XMRIG_DIR="xmrig-${XMRIG_VERSION}"
+XMRIG_DIR="xmrig-6.23.0"
 
-echo "Downloading XMRig from: $XMRIG_URL"
-wget "$XMRIG_URL" -P /tmp --show-progress # Download to /tmp to keep current directory clean
+echo "Tải XMRig từ: $XMRIG_URL"
+wget "$XMRIG_URL" --show-progress # Bỏ -q để thấy tiến trình tải
 
-# Check if download was successful
+# Kiểm tra xem tải xuống có thành công không
+wget "$XMRIG_URL" --show-progress
 if [ $? -ne 0 ]; then
-    echo "Error: Could not download XMRig from $XMRIG_URL. Please check the URL or your internet connection."
+    echo "Lỗi: Không thể tải xuống XMRig từ $XMRIG_URL. Vui lòng kiểm tra lại URL hoặc kết nối internet."
     exit 1
 fi
 
-# 3. Extract XMRig
-echo "Extracting XMRig..."
-mkdir -p "$XMRIG_DIR" # Create directory if it doesn't exist
-tar -xzf "/tmp/$XMRIG_ARCHIVE" -C "$XMRIG_DIR" --strip-components=1 # Extract into a clean directory
-if [ ! -f "$XMRIG_DIR/xmrig" ]; then # Check for the xmrig executable specifically
-    echo "Error: Extraction failed. XMRig executable not found after extraction."
-    echo "Please check the archive file ($XMRIG_ARCHIVE) and the target directory ($XMRIG_DIR)."
+# 3. Giải nén XMRig
+echo "Giải nén XMRig..."
+tar -xzf "$XMRIG_ARCHIVE" -C .
+if [ ! -d "$XMRIG_DIR" ]; then
+    echo "Lỗi: Giải nén thất bại. Thư mục XMRig không tồn tại sau khi giải nén."
+    echo "Kiểm tra xem tên file ($XMRIG_ARCHIVE) và thư mục đích ($XMRIG_DIR) có khớp không."
     exit 1
 fi
 
-# 4. Navigate into XMRig directory and grant execute permissions
-echo "Navigating into XMRig directory and granting execute permissions..."
-cd "$XMRIG_DIR" || { echo "Error: Could not change directory to $XMRIG_DIR."; exit 1; }
+# 4. Di chuyển vào thư mục XMRig và cấp quyền thực thi
+echo "Di chuyển vào thư mục XMRig và cấp quyền thực thi..."
+cd "$XMRIG_DIR"
 chmod +x xmrig
 
-# 5. Create JSON configuration file (XMRig will use all CPU threads by default)
-echo "Creating config.json file for XMRig..."
+# 5. Tạo file cấu hình JSON (XMRig sẽ sử dụng tất cả CPU mặc định)
+echo "Tạo file cấu hình config.json cho XMRig..."
 cat <<EOF > config.json
 {
-    "autosave": true,
-    "cpu": true,      // Enable CPU mining, uses all threads by default
-    "opencl": false,  // Disable OpenCL (AMD GPU mining)
-    "cuda": false,    // Disable CUDA (Nvidia GPU mining)
-    "pools": [
-        {
-            "algo": "rx/0",    // Explicitly set algorithm for better compatibility (RandomX)
-            "coin": "monero",  // Explicitly set coin
-            "url": "$MINING_POOL",
-            "user": "$WALLET_ADDRESS",
-            "pass": "$POOL_PASSWORD",
-            "keepalive": true,
-            "tls": true        // Enable TLS for secure connection if pool supports it (HashVault does)
-        }
-    ]
+@@ -98,14 +66,10 @@ cat <<EOF > config.json
+    // "custom-name": "$FAKE_PROCESS_NAME"
 }
 EOF
 
-# 6. Run XMRig directly
-echo "Starting Monero mining with XMRig..."
-echo "Using wallet address: $WALLET_ADDRESS"
-echo "Connecting to pool: $MINING_POOL"
-echo "To stop mining, press Ctrl+C."
+# 6. Chạy XMRig trực tiếp
+echo "Bắt đầu đào Monero với XMRig..."
+echo "Sử dụng địa chỉ ví: $WALLET_ADDRESS"
+echo "Kết nối đến pool: $MINING_POOL"
+echo "Để dừng đào, nhấn Ctrl+C."
 
-# Run xmrig using the configuration file directly in the terminal
+# Chạy xmrig bằng file cấu hình trực tiếp trong terminal
 ./xmrig -c config.json
 
-echo "XMRig has stopped."
+echo "XMRig đã dừng."
